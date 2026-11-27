@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+
+# Biến môi trường – KHÔNG commit (R-04). Chỉ commit .env.example
+.env
+.env.local
+.env.*.local
