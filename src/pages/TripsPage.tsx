@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
-import { CalendarDays, Luggage, MapPin, Plus } from 'lucide-react'
+import { CalendarDays, MapPin, Plus } from 'lucide-react'
+import { ILLUSTRATIONS } from '../lib/assets'
 import { useAuth } from '../auth/AuthProvider'
 import { Badge, buttonClass, EmptyState, ErrorState, Spinner } from '../components/ui'
 import { useMyTrips } from '../hooks/trips'
@@ -39,7 +40,7 @@ export function TripsPage() {
         <ErrorState error={toFriendlyError(trips.error)} onRetry={() => void trips.refetch()} />
       ) : trips.data.length === 0 ? (
         <EmptyState
-          icon={<Luggage className="size-10" aria-hidden />}
+          image={ILLUSTRATIONS.emptyTrips}
           title="Chưa có chuyến đi nào"
           description="Tạo chuyến đi đầu tiên để lên lịch trình, ghi chi tiêu và chia tiền cùng bạn bè."
           action={

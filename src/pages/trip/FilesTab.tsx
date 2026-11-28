@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ExternalLink, FileText, File as FileIcon, Image as ImageIcon, Paperclip, Trash2, Upload } from 'lucide-react'
+import { ExternalLink, FileText, File as FileIcon, Image as ImageIcon, Trash2, Upload } from 'lucide-react'
+import { ILLUSTRATIONS } from '../../lib/assets'
 import { ConfirmDialog } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
 import { Button, EmptyState, ErrorAlert, ErrorState, Spinner } from '../../components/ui'
@@ -66,7 +67,7 @@ export function FilesTab() {
 
       {files.data.length === 0 ? (
         <EmptyState
-          icon={<Paperclip className="size-10" aria-hidden />}
+          image={ILLUSTRATIONS.emptyFiles}
           title="Chưa có tệp nào"
           description="Lưu vé, xác nhận đặt phòng, ảnh hóa đơn… để cả nhóm cùng xem."
           action={canEdit ? <Button onClick={() => setUploadOpen(true)}><Upload className="size-4" aria-hidden />Tải lên</Button> : undefined}

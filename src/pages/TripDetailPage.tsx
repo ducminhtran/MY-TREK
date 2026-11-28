@@ -1,8 +1,9 @@
 import { Link, NavLink, Outlet, useParams } from 'react-router'
 import {
   CalendarDays, ChevronLeft, LayoutDashboard, ListChecks, Map as MapIcon, MapPin, Paperclip,
-  Scale, SearchX, Settings, Users, Wallet, type LucideIcon,
+  Scale, Settings, Users, Wallet, type LucideIcon,
 } from 'lucide-react'
+import { ILLUSTRATIONS } from '../lib/assets'
 import { useAuth } from '../auth/AuthProvider'
 import { Badge, buttonClass, EmptyState, ErrorState, Spinner } from '../components/ui'
 import { useTripInfo } from '../hooks/trips'
@@ -39,7 +40,7 @@ export function TripDetailPage() {
   if (!info.data) {
     return (
       <EmptyState
-        icon={<SearchX className="size-10" aria-hidden />}
+        image={ILLUSTRATIONS.notFound}
         title="Không tìm thấy chuyến đi"
         description="Chuyến đi không tồn tại, đã bị xóa hoặc bạn không có quyền xem."
         action={<Link to="/" className={buttonClass('secondary')}>Về danh sách chuyến đi</Link>}

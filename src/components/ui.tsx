@@ -1,6 +1,7 @@
 import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
 import { CircleAlert, CircleCheck, Eye, EyeOff, Info, LoaderCircle } from 'lucide-react'
 import type { FriendlyError } from '../lib/errors'
+import { asset } from '../lib/assets'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 
@@ -50,15 +51,21 @@ export function Spinner({ label = 'Đang tải…' }: { label?: string }) {
 
 type EmptyStateProps = {
   icon?: ReactNode
+  /** Hình minh họa (đường dẫn trong public/) – ưu tiên hơn icon */
+  image?: string
   title: string
   description?: string
   action?: ReactNode
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon, image, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-      {icon && <div className="text-brand-700">{icon}</div>}
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
+      {image ? (
+        <img src={asset(image)} alt="" className="h-36 w-auto max-w-full select-none md:h-44" draggable={false} />
+      ) : (
+        icon && <div className="text-brand-700">{icon}</div>
+      )}
       <h2 className="text-base font-semibold text-slate-800">{title}</h2>
       {description && <p className="max-w-sm text-sm text-slate-500">{description}</p>}
       {action}

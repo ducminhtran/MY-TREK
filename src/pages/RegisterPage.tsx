@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
-import { MailCheck } from 'lucide-react'
+import { asset, ILLUSTRATIONS } from '../lib/assets'
 import { useAuth } from '../auth/AuthProvider'
 import { AuthLayout } from '../components/AuthLayout'
 import { Button, ErrorAlert, Field, Input, PasswordInput } from '../components/ui'
@@ -74,7 +74,7 @@ export function RegisterPage() {
     return (
       <AuthLayout title="Kiểm tra email" footer={<Link to="/login" className="font-medium text-brand-700 hover:underline">Về trang đăng nhập</Link>}>
         <div className="flex flex-col items-center gap-3 text-center">
-          <MailCheck className="size-12 text-brand-700" aria-hidden />
+          <img src={asset(ILLUSTRATIONS.emailSent)} alt="" className="h-32 w-auto" draggable={false} />
           <p className="text-sm text-slate-700">
             Chúng tôi đã gửi liên kết xác nhận tới <strong className="break-all">{sentTo}</strong>.
           </p>

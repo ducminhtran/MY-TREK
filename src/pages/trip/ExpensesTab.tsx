@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Paperclip, Plus, Receipt } from 'lucide-react'
+import { Paperclip, Plus } from 'lucide-react'
+import { ILLUSTRATIONS } from '../../lib/assets'
 import { ConfirmDialog } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
 import { Badge, Button, Card, EmptyState, ErrorAlert, ErrorState, Spinner } from '../../components/ui'
@@ -83,7 +84,7 @@ export function ExpensesTab() {
       )}
 
       {all.length === 0 ? (
-        <EmptyState icon={<Receipt className="size-10" aria-hidden />} title="Chưa có khoản chi nào"
+        <EmptyState image={ILLUSTRATIONS.emptyExpenses} title="Chưa có khoản chi nào"
           description="Ghi lại các khoản chi để theo dõi ngân sách và chia tiền tự động."
           action={canEdit ? <Button onClick={() => openForm(null)}><Plus className="size-4" aria-hidden />Thêm khoản chi</Button> : undefined} />
       ) : (

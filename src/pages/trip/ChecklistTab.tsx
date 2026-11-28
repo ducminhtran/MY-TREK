@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { ListChecks, Plus, Sparkles } from 'lucide-react'
+import { Plus, Sparkles } from 'lucide-react'
+import { ILLUSTRATIONS } from '../../lib/assets'
 import { ConfirmDialog } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
 import { Button, EmptyState, ErrorAlert, ErrorState, Input, SELECT_CLASS, Spinner } from '../../components/ui'
@@ -99,7 +100,7 @@ export function ChecklistTab() {
 
       {items.length === 0 ? (
         <EmptyState
-          icon={<ListChecks className="size-10" aria-hidden />}
+          image={ILLUSTRATIONS.emptyChecklist}
           title="Checklist đang trống"
           description="Ghi lại hành lý, giấy tờ và việc cần làm trước chuyến đi."
           action={canEdit ? (
