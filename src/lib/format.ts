@@ -84,6 +84,30 @@ export function formatMoney(amount: number, currency: string): string {
   }
 }
 
+/** Định dạng số kiểu Việt Nam, không ký hiệu tiền: 25400 → '25.400', 0.5 → '0,5' */
+export function formatNumber(value: number, maxDecimals = 6): string {
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: maxDecimals }).format(value)
+}
+
+/**
+ * Đọc số người dùng gõ theo kiểu Việt Nam hoặc kiểu máy:
+ * '25.400' → 25400; '25.400,5' → 25400.5; '1,5' → 1.5; '1.5' → 1.5; '' → null; sai → NaN
+ */
+export function parseNumberInput(raw: string): number | null {
+  const s = raw.replace(/\s/g, '')
+  if (!s) return null
+  let normalized: string
+  if (s.includes(',')) {
+    normalized = s.replace(/\./g, '').replace(',', '.') // có dấu phẩy → dấu chấm là phân cách nghìn
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+    normalized = s.replace(/\./g, '') // '25.400', '1.250.000'
+  } else {
+    normalized = s
+  }
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return Number.NaN
+  return Number(normalized)
+}
+
 /** Bỏ dấu tiếng Việt, chuyển về chữ thường không dấu, chỉ còn a-z 0-9 và '-' */
 export function slugify(value: string): string {
   return value

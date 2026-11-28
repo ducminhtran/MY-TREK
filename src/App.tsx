@@ -14,6 +14,11 @@ import { TripsPage } from './pages/TripsPage'
 import { NewTripPage } from './pages/NewTripPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { TripDetailPage } from './pages/TripDetailPage'
+import { OverviewTab } from './pages/trip/OverviewTab'
+import { MembersTab } from './pages/trip/MembersTab'
+import { SettingsTab } from './pages/trip/SettingsTab'
+import { ComingSoonTab } from './pages/trip/ComingSoonTab'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +55,17 @@ export default function App() {
               >
                 <Route index element={<TripsPage />} />
                 <Route path="trips/new" element={<NewTripPage />} />
+                <Route path="trips/:tripId" element={<TripDetailPage />}>
+                  <Route index element={<OverviewTab />} />
+                  <Route path="itinerary" element={<ComingSoonTab title="Lịch trình" />} />
+                  <Route path="expenses" element={<ComingSoonTab title="Chi tiêu" />} />
+                  <Route path="balances" element={<ComingSoonTab title="Chia tiền" />} />
+                  <Route path="checklist" element={<ComingSoonTab title="Checklist" />} />
+                  <Route path="map" element={<ComingSoonTab title="Bản đồ" />} />
+                  <Route path="files" element={<ComingSoonTab title="Tệp đính kèm" />} />
+                  <Route path="members" element={<MembersTab />} />
+                  <Route path="settings" element={<SettingsTab />} />
+                </Route>
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>

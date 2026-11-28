@@ -8,8 +8,9 @@
 |-|-|-|
 |1|Khởi tạo dự án|**Hoàn thành** (28/11/2026). Đã sửa: workflow upload sai vị trí + Pages "Deploy from a branch" → chuyển sang GitHub Actions; thêm Secrets. Workflow xanh (typecheck + test + build GĐ 1–3 pass), web hiện trang Đăng nhập|
 |2|CSDL|**Hoàn thành** – migration chạy trên Supabase; test SQL PASS toàn bộ (28/11/2026)|
-|3|Auth + Tài khoản|Đã deploy (Actions xanh) – chờ người dùng thử đăng ký/xác nhận email/đăng nhập/quên mật khẩu trên bản deploy|
-|4–8|–|Chưa bắt đầu|
+|3|Auth + Tài khoản|Đã deploy (Actions xanh). Người dùng chuyển sang GĐ 4, **chưa xác nhận UAT 8 bước** của GĐ 3; SMTP (Gmail/Brevo) chưa chốt|
+|4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong – chờ upload, Actions xanh, thử 2 tài khoản mời/nhận lời mời|
+|5–8|–|Chưa bắt đầu|
 
 ## Môi trường
 
@@ -71,6 +72,20 @@
 |AUTH-07 Bảo vệ route|Xong|`RequireAuth` → `/login`, quay lại trang cũ sau khi đăng nhập|
 |KT-03 link email|Xong|Đọc `?code`/`?error_code` lúc tải trang; mở link trên thiết bị khác → "Email đã được xác nhận. Vui lòng đăng nhập"; xóa tham số khỏi URL|
 |Mục 9.4 lỗi tiếng Việt|Xong|`lib/errors.ts` + unit test|
+
+## Giai đoạn 4 – đã làm
+
+|ID|Trạng thái|Ghi chú|
+|-|-|-|
+|TRIP-01|Xong|3 nhóm Đang diễn ra / Sắp tới / Đã qua; card tên, điểm đến, khoảng ngày, số ngày, vai trò|
+|TRIP-02, TRIP-03, SET-01|Xong|`TripForm` dùng chung; ngân sách nhập kiểu "15.000.000"; khóa tiền tệ gốc khi đã có khoản chi (BR-10)|
+|TRIP-04, SET-03|Xong|Gõ lại tên để xác nhận; xóa file Storage trước rồi xóa trips|
+|TRIP-05|Xong|Số ngày, thành viên, checklist, chi tiêu so ngân sách (đỏ khi vượt), chi theo hạng mục, 3 hoạt động sắp tới|
+|TRIP-06|Xong|9 tab cuộn ngang; Lịch trình/Chi tiêu/Chia tiền/Checklist/Bản đồ/Tệp đang là "sẽ có ở bản sau"|
+|MEM-01 → MEM-06|Xong|Thêm (có email = lời mời, không email = offline), sửa, xóa, sao chép lời mời, rời chuyến đi; lỗi BR-09 hiện nguyên văn từ trigger|
+|MEM-03|Xong|Khối "Lời mời" ở trang chủ: Chấp nhận → mở chuyến đi; Từ chối có xác nhận|
+|SET-02|Xong|Thêm/sửa/xóa tỷ giá "1 USD = 25.400 VND"|
+|Unit test|Xong|`lib/trips.test.ts`: phân nhóm chuyến đi, khoảng ngày, trạng thái thành viên, text lời mời, kiểm tra form, đọc số kiểu VN|
 
 ## Ghi chú
 
