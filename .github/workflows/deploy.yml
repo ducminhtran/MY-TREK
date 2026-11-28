@@ -1,1 +1,88 @@
 
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lấy source
+        uses: actions/checkout@v5
+
+      # Chưa có package-lock.json (máy dev chưa cài Node) nên không bật cache npm.
+      # Khi đã commit package-lock.json có thể thêm: cache: npm
+      - name: Cài Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Cài thư viện
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Kiểm tra kiểu (typecheck)
+        run: npm run typecheck
+
+      - name: Unit test
+        run: npm test
+
+      # KT-02: repo *.github.io → "/", ngược lại "/<repo>/". Ghi đè bằng repository variable BASE_PATH
+      - name: Tính base path
+        id: base
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          OVERRIDE: ${{ vars.BASE_PATH }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            BASE="$OVERRIDE"
+          elif [[ "$REPO_NAME" == *.github.io ]]; then
+            BASE="/"
+          else
+            BASE="/$REPO_NAME/"
+          fi
+          echo "Base path: $BASE"
+          echo "path=$BASE" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: ${{ steps.base.outputs.path }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Cấu hình Pages
+        uses: actions/configure-pages@v5
+
+      - name: Tải bản build lên
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy lên GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
