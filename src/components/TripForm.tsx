@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button, ErrorAlert, Field, Input, SELECT_CLASS, TEXTAREA_CLASS } from './ui'
+import { DateInput } from './DateTimeInputs'
 import { COMMON_CURRENCIES, DEFAULT_CURRENCY } from '../lib/constants'
 import { formatNumber, parseNumberInput } from '../lib/format'
 import { validateTripInput, type TripInputErrors } from '../lib/trips'
@@ -65,12 +66,10 @@ export function TripForm({ initial, submitLabel, submitting, error, currencyLock
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Ngày bắt đầu" htmlFor="trip-start" required error={errors.start_date}>
-          <Input id="trip-start" type="date" aria-invalid={!!errors.start_date}
-            value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <DateInput id="trip-start" invalid={!!errors.start_date} value={startDate} onChange={setStartDate} />
         </Field>
         <Field label="Ngày kết thúc" htmlFor="trip-end" required error={errors.end_date}>
-          <Input id="trip-end" type="date" min={startDate || undefined} aria-invalid={!!errors.end_date}
-            value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <DateInput id="trip-end" invalid={!!errors.end_date} value={endDate} onChange={setEndDate} />
         </Field>
       </div>
 

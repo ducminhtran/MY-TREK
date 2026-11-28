@@ -10,6 +10,7 @@ import { currencyDecimals, formatMoney, formatNumber, parseNumberInput, toISODat
 import { splitDifferenceMinor, splitEqual, type Share } from '../../lib/split'
 import type { Expense, ItineraryCategory, Trip, TripMember } from '../../types'
 import { SplitEditor } from './SplitEditor'
+import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
 
 type Props = {
   trip: Trip
@@ -40,7 +41,7 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [customShares, setCustomShares] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
-  const [errors, setErrors] = useState<Partial<Record<'title' | 'amount' | 'rate' | 'paidBy' | 'split', string>>>({})
+  const [errors, setErrors] = useState<Partial<Record<'title' | 'amount' | 'rate' | 'date' | 'paidBy' | 'split', string>>>({})
 
   useEffect(() => {
     if (!open) return
@@ -93,6 +94,8 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     if (!title.trim()) found.title = 'Vui lòng nhập tên khoản chi'
     if (!amountValid) found.amount = 'Số tiền phải lớn hơn 0'
     if (rate === null || Number.isNaN(rate) || rate <= 0) found.rate = 'Tỷ giá phải là số lớn hơn 0'
+    const dateError = dateFieldError(date, true)
+    if (dateError) found.date = dateError
     if (!paidBy) found.paidBy = 'Chọn người trả'
     if (shares.length === 0) found.split = 'Chọn ít nhất 1 người chia'
     else if (differenceMinor !== 0) found.split = 'Tổng phần chia phải bằng đúng số tiền'
@@ -153,8 +156,8 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Ngày chi" htmlFor="exp-date">
-            <Input id="exp-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Field label="Ngày chi" htmlFor="exp-date" error={errors.date}>
+            <DateInput id="exp-date" invalid={!!errors.date} value={date} onChange={setDate} />
           </Field>
           <Field label="Hạng mục" htmlFor="exp-category">
             <select id="exp-category" className={SELECT_CLASS} value={category} onChange={(e) => setCategory(e.target.value as ItineraryCategory)}>

@@ -22,11 +22,43 @@ export function toISODate(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
 }
 
-/** 'YYYY-MM-DD' → 'dd/MM/yyyy' */
+/** Định dạng hiển thị ngày: 'YYYY-MM-DD' (DB) → 'dd-MM-yyyy' */
 export function formatDate(value: string): string {
   const d = parseLocalDate(value)
   if (!d) return value
-  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
+  return `${pad2(d.getDate())}-${pad2(d.getMonth() + 1)}-${d.getFullYear()}`
+}
+
+/** Chuỗi 'YYYY-MM-DD' hợp lệ (đúng định dạng lưu DB, ngày có thật) */
+export function isValidIsoDate(value: string): boolean {
+  return parseLocalDate(value) !== null
+}
+
+/** Người dùng gõ 'dd-MM-yyyy' → 'YYYY-MM-DD' để lưu DB. Sai / ngày không tồn tại → null */
+export function parseDisplayDate(text: string): string | null {
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(text.trim())
+  if (!m) return null
+  const iso = `${m[3]}-${m[2]}-${m[1]}`
+  return isValidIsoDate(iso) ? iso : null
+}
+
+/** Tự chèn dấu '-' khi gõ ngày: '19122026' → '19-12-2026' (chỉ giữ chữ số, tối đa 8 số) */
+export function maskDateInput(text: string): string {
+  const digits = text.replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 4) return `${digits.slice(0, 2)}-${digits.slice(2)}`
+  return `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`
+}
+
+/** Giờ 24h 'HH:mm' hợp lệ (00:00 → 23:59) */
+export function isValidTime(value: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
+}
+
+/** Tự chèn dấu ':' khi gõ giờ: '0830' → '08:30' (tối đa 4 số) */
+export function maskTimeInput(text: string): string {
+  const digits = text.replace(/\D/g, '').slice(0, 4)
+  return digits.length <= 2 ? digits : `${digits.slice(0, 2)}:${digits.slice(2)}`
 }
 
 /** Thứ viết tắt tiếng Việt: CN, T2 … T7 */
@@ -35,17 +67,24 @@ export function weekdayShort(date: Date): string {
   return day === 0 ? 'CN' : `T${day + 1}`
 }
 
-/** 'YYYY-MM-DD' → 'T7, 19/12/2026' */
+/** 'YYYY-MM-DD' → 'T7, 19-12-2026' */
 export function formatDateWithWeekday(value: string): string {
   const d = parseLocalDate(value)
   if (!d) return value
   return `${weekdayShort(d)}, ${formatDate(value)}`
 }
 
-/** 'HH:mm' hoặc 'HH:mm:ss' → 'HH:mm' */
+/** Giờ 24h: DB trả 'HH:mm:ss' (kiểu time) → 'HH:mm' */
 export function formatTime(value: string | null | undefined): string {
   if (!value) return ''
   return value.slice(0, 5)
+}
+
+/** Thời điểm (timestamptz ISO từ DB) → 'dd-MM-yyyy HH:mm' theo giờ máy người dùng */
+export function formatDateTime(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp)
+  if (Number.isNaN(d.getTime())) return isoTimestamp
+  return `${formatDate(toISODate(d))} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
 
 /** Số ngày của chuyến đi, tính cả ngày đầu và ngày cuối */

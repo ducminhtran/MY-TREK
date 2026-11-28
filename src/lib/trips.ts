@@ -23,14 +23,17 @@ export function groupTripsByPhase<T extends Dated>(trips: T[], today: string = t
   return groups
 }
 
-/** '19/12 – 21/12/2026'; khác năm thì ghi đủ cả hai */
+/**
+ * '19-12 → 21-12-2026'; khác năm thì ghi đủ cả hai.
+ * Dùng '→' thay cho dấu gạch vì ngày đã dùng '-' (dd-MM-yyyy), tránh đọc nhầm.
+ */
 export function formatDateRange(start: string, end: string): string {
   const s = parseLocalDate(start)
   const e = parseLocalDate(end)
-  if (!s || !e) return `${start} – ${end}`
+  if (!s || !e) return `${start} → ${end}`
   if (start === end) return formatDate(start)
-  if (s.getFullYear() !== e.getFullYear()) return `${formatDate(start)} – ${formatDate(end)}`
-  return `${formatDate(start).slice(0, 5)} – ${formatDate(end)}`
+  if (s.getFullYear() !== e.getFullYear()) return `${formatDate(start)} → ${formatDate(end)}`
+  return `${formatDate(start).slice(0, 5)} → ${formatDate(end)}`
 }
 
 export type MemberState = 'joined' | 'invited' | 'offline'
@@ -74,8 +77,11 @@ export function validateTripInput(input: TripInput): TripInputErrors {
   if (!name) errors.name = 'Vui lòng nhập tên chuyến đi'
   else if (name.length > 200) errors.name = 'Tên tối đa 200 ký tự'
   if (input.destination.trim().length > 200) errors.destination = 'Điểm đến tối đa 200 ký tự'
-  if (!parseLocalDate(input.start_date)) errors.start_date = 'Vui lòng chọn ngày bắt đầu'
-  if (!parseLocalDate(input.end_date)) errors.end_date = 'Vui lòng chọn ngày kết thúc'
+  const BAD_DATE = 'Ngày không hợp lệ (dd-mm-yyyy)'
+  if (!input.start_date) errors.start_date = 'Vui lòng nhập ngày bắt đầu'
+  else if (!parseLocalDate(input.start_date)) errors.start_date = BAD_DATE
+  if (!input.end_date) errors.end_date = 'Vui lòng nhập ngày kết thúc'
+  else if (!parseLocalDate(input.end_date)) errors.end_date = BAD_DATE
   if (!errors.start_date && !errors.end_date) {
     if (input.end_date < input.start_date) errors.end_date = 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu'
     else if (countDaysInclusive(input.start_date, input.end_date) > MAX_TRIP_DAYS)

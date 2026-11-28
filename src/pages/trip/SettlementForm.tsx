@@ -6,6 +6,7 @@ import { useAddSettlement } from '../../hooks/expenses'
 import { toFriendlyError } from '../../lib/errors'
 import { currencyDecimals, parseNumberInput, toISODate } from '../../lib/format'
 import type { Trip, TripMember } from '../../types'
+import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
 
 type Props = {
   trip: Trip
@@ -25,7 +26,7 @@ export function SettlementForm({ trip, members, open, onClose }: Props) {
   const [amountText, setAmountText] = useState('')
   const [date, setDate] = useState('')
   const [note, setNote] = useState('')
-  const [errors, setErrors] = useState<Partial<Record<'to' | 'amount', string>>>({})
+  const [errors, setErrors] = useState<Partial<Record<'to' | 'amount' | 'date', string>>>({})
 
   useEffect(() => {
     if (!open) return
@@ -47,6 +48,8 @@ export function SettlementForm({ trip, members, open, onClose }: Props) {
     const found: typeof errors = {}
     if (!from || !to || from === to) found.to = 'Người trả và người nhận phải khác nhau'
     if (amount === null || amount <= 0) found.amount = 'Số tiền phải lớn hơn 0'
+    const dateError = dateFieldError(date, true)
+    if (dateError) found.date = dateError
     setErrors(found)
     if (Object.keys(found).length > 0 || amount === null) return
 
@@ -83,8 +86,8 @@ export function SettlementForm({ trip, members, open, onClose }: Props) {
         <Field label={`Số tiền (${trip.base_currency})`} htmlFor="st-amount" required error={errors.amount}>
           <Input id="st-amount" inputMode="decimal" aria-invalid={!!errors.amount} value={amountText} onChange={(e) => setAmountText(e.target.value)} />
         </Field>
-        <Field label="Ngày" htmlFor="st-date">
-          <Input id="st-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Field label="Ngày" htmlFor="st-date" error={errors.date}>
+          <DateInput id="st-date" invalid={!!errors.date} value={date} onChange={setDate} />
         </Field>
         <Field label="Ghi chú" htmlFor="st-note">
           <Input id="st-note" maxLength={2000} placeholder="VD: Chuyển khoản Vietcombank" value={note} onChange={(e) => setNote(e.target.value)} />

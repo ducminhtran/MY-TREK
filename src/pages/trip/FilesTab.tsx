@@ -7,18 +7,12 @@ import { Button, EmptyState, ErrorAlert, ErrorState, Spinner } from '../../compo
 import { createSignedFileUrl, useAttachments, useDeleteFile } from '../../hooks/files'
 import { toFriendlyError } from '../../lib/errors'
 import { fileKind, formatBytes } from '../../lib/files'
+import { formatDateTime } from '../../lib/format'
 import type { Attachment } from '../../types'
 import { useTripContext } from './context'
 import { UploadForm } from './UploadForm'
 
 const KIND_ICON = { image: ImageIcon, pdf: FileText, other: FileIcon } as const
-
-/** Ngày giờ tải lên: 'dd/MM/yyyy HH:mm' */
-function formatUploadedAt(iso: string): string {
-  const d = new Date(iso)
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
-}
 
 /** FILE-01 → FILE-04 */
 export function FilesTab() {
@@ -82,7 +76,7 @@ export function FilesTab() {
                 <Icon className="size-8 shrink-0 text-brand-700" aria-hidden />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900" title={a.file_name}>{a.file_name}</p>
-                  <p className="text-xs text-slate-500">{formatBytes(a.size_bytes)} · {formatUploadedAt(a.created_at)}</p>
+                  <p className="text-xs text-slate-500">{formatBytes(a.size_bytes)} · {formatDateTime(a.created_at)}</p>
                   {linked && <p className="truncate text-xs text-brand-700">{linked}</p>}
                 </div>
                 <Button variant="ghost" className="px-3" loading={opening === a.id} onClick={() => void openFile(a)} aria-label={`Mở ${a.file_name}`}>

@@ -162,6 +162,24 @@
 |PWA cache|Workbox precache thêm `png/svg/webp` (bỏ og-image) để ảnh minh họa xem được offline|
 |Đã xóa|`public/favicon.svg`, `scripts/generate-icons.ps1` (thiết kế cũ)|
 
+## Định dạng ngày giờ (28/11/2026 – ghi đè mục 9.3 PROMPT.md)
+
+|Hạng mục|Quyết định|
+|-|-|
+|Hiển thị ngày|`dd-MM-yyyy`; có thứ: `T7, 19-12-2026`; khoảng ngày dùng mũi tên: `19-12 → 21-12-2026` (tránh nhầm với dấu `-` trong ngày)|
+|Hiển thị giờ|24h `HH:mm`; ngày giờ: `19-12-2026 14:05`|
+|Lưu DB|Giữ nguyên: `date` = `YYYY-MM-DD`, `time` = `HH:mm[:ss]`, `timestamptz`|
+|Ô nhập|Thay `type="date"/"time"` (hiển thị theo ngôn ngữ máy, không ép được) bằng `components/DateTimeInputs.tsx`: hiện `dd-mm-yyyy` / `hh:mm`, tự chèn dấu khi gõ, nút mở bộ chọn của hệ điều hành; trả ra định dạng DB; gõ sai → form báo "Ngày không hợp lệ (dd-mm-yyyy)" / "Giờ không hợp lệ (hh:mm, 24 giờ)"|
+|Áp dụng|Form chuyến đi, lịch trình (giờ), chi tiêu, thanh toán, checklist (thêm nhanh + sửa); tab Tệp (ngày giờ tải lên)|
+|DB|`002_date_format_messages.sql`: thông báo lỗi BR-14 dùng `DD-MM-YYYY` – **người dùng cần chạy trên SQL Editor**|
+|Test|`format.test.ts`, `trips.test.ts` cập nhật + test chuyển đổi dd-MM-yyyy ↔ YYYY-MM-DD, kiểm tra giờ 24h|
+
+## Đang chờ người dùng quyết
+
+|Việc|Trạng thái|
+|-|-|
+|Giai đoạn 9 – Chia sẻ vị trí thành viên (chống lạc)|Đã đề xuất phương án PWA (vị trí cập nhật khi app đang mở, tự nguyện, có thời hạn, không lưu lịch sử). Chờ trả lời 4 câu: phương án / ai được chia sẻ / thời hạn / tự tải lại 30s hay Realtime|
+
 ## Definition of Done (mục 15)
 
 |Tiêu chí|Trạng thái|

@@ -5,6 +5,7 @@ import { useUpdateChecklistItem } from '../../hooks/checklist'
 import { toFriendlyError } from '../../lib/errors'
 import type { ChecklistCategory, ChecklistItem, TripMember } from '../../types'
 import { CHECKLIST_GROUPS } from './ChecklistRow'
+import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
 
 type Props = {
   tripId: string
@@ -24,6 +25,7 @@ export function ChecklistItemForm({ tripId, members, item, onClose }: Props) {
   const [assignee, setAssignee] = useState('')
   const [due, setDue] = useState('')
   const [titleError, setTitleError] = useState<string>()
+  const [dueError, setDueError] = useState<string>()
 
   useEffect(() => {
     if (!item) return
@@ -32,6 +34,7 @@ export function ChecklistItemForm({ tripId, members, item, onClose }: Props) {
     setAssignee(item.assignee_id ?? '')
     setDue(item.due_date ?? '')
     setTitleError(undefined)
+    setDueError(undefined)
     update.reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- chỉ nạp lại khi đổi mục
   }, [item])
@@ -39,10 +42,13 @@ export function ChecklistItemForm({ tripId, members, item, onClose }: Props) {
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!item) return
+    const dueProblem = dateFieldError(due)
+    setDueError(dueProblem)
     if (!title.trim()) {
       setTitleError('Vui lòng nhập tên việc')
       return
     }
+    if (dueProblem) return
     update.mutate(
       { id: item.id, input: { title: title.trim(), category, assignee_id: assignee || null, due_date: due || null } },
       { onSuccess: onClose },
@@ -77,8 +83,8 @@ export function ChecklistItemForm({ tripId, members, item, onClose }: Props) {
             {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
           </select>
         </Field>
-        <Field label="Hạn" htmlFor="chk-due">
-          <Input id="chk-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+        <Field label="Hạn" htmlFor="chk-due" error={dueError}>
+          <DateInput id="chk-due" invalid={!!dueError} value={due} onChange={setDue} />
         </Field>
       </form>
     </Modal>

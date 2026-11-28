@@ -35,9 +35,9 @@ describe('tripPhase / groupTripsByPhase (TRIP-01)', () => {
 
 describe('formatDateRange', () => {
   it('cùng năm / khác năm / 1 ngày', () => {
-    expect(formatDateRange('2026-12-19', '2026-12-21')).toBe('19/12 – 21/12/2026')
-    expect(formatDateRange('2026-12-30', '2027-01-02')).toBe('30/12/2026 – 02/01/2027')
-    expect(formatDateRange('2026-12-19', '2026-12-19')).toBe('19/12/2026')
+    expect(formatDateRange('2026-12-19', '2026-12-21')).toBe('19-12 → 21-12-2026')
+    expect(formatDateRange('2026-12-30', '2027-01-02')).toBe('30-12-2026 → 02-01-2027')
+    expect(formatDateRange('2026-12-19', '2026-12-19')).toBe('19-12-2026')
   })
 })
 
@@ -79,6 +79,8 @@ describe('validateTripInput (TRIP-02, BR-01)', () => {
     expect(validateTripInput({ ...base, end_date: '2027-12-18' }).end_date).toBeUndefined()
     expect(validateTripInput({ ...base, budget: -1 }).budget).toBeDefined()
     expect(validateTripInput({ ...base, budget: Number.NaN }).budget).toBeDefined()
+    expect(validateTripInput({ ...base, start_date: '' }).start_date).toContain('Vui lòng')
+    expect(validateTripInput({ ...base, start_date: '31-02-2026' }).start_date).toContain('không hợp lệ')
   })
 })
 

@@ -9,6 +9,7 @@ import { useTripMembers } from '../../hooks/members'
 import { toFriendlyError } from '../../lib/errors'
 import type { ChecklistCategory, ChecklistInput, ChecklistItem } from '../../types'
 import { CHECKLIST_GROUPS, ChecklistRow } from './ChecklistRow'
+import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
 import { ChecklistItemForm } from './ChecklistItemForm'
 import { useTripContext } from './context'
 
@@ -39,6 +40,7 @@ export function ChecklistTab() {
   const [category, setCategory] = useState<ChecklistCategory>('hanh_ly')
   const [assignee, setAssignee] = useState('')
   const [due, setDue] = useState('')
+  const [dueError, setDueError] = useState<string>()
   const [editing, setEditing] = useState<ChecklistItem | null>(null)
   const [deleting, setDeleting] = useState<ChecklistItem | null>(null)
 
@@ -55,6 +57,9 @@ export function ChecklistTab() {
   function handleAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!title.trim()) return
+    const problem = dateFieldError(due)
+    setDueError(problem)
+    if (problem) return
     const input: ChecklistInput = { title: title.trim(), category, assignee_id: assignee || null, due_date: due || null }
     add.mutate({ items: [input], startOrder: nextOrder }, { onSuccess: () => { setTitle(''); setDue('') } })
   }
@@ -89,13 +94,14 @@ export function ChecklistTab() {
             <option value="">Chưa giao</option>
             {memberList.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
           </select>
-          <Input aria-label="Hạn" type="date" className="flex-[1_1_9rem]" value={due} onChange={(e) => setDue(e.target.value)} />
+          <DateInput aria-label="Hạn (dd-mm-yyyy)" className="flex-[1_1_10rem]" invalid={!!dueError} value={due} onChange={setDue} />
           <Button type="submit" loading={add.isPending} disabled={!title.trim()} className="flex-[1_1_6rem]">
             <Plus className="size-4" aria-hidden />
             Thêm
           </Button>
         </form>
       )}
+      {dueError && <p className="text-sm text-red-600" role="alert">Hạn: {dueError}</p>}
       {add.error && <ErrorAlert error={toFriendlyError(add.error)} />}
 
       {items.length === 0 ? (

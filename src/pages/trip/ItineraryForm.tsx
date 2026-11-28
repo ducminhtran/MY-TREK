@@ -9,6 +9,7 @@ import { formatDateWithWeekday, formatNumber, formatTime, parseNumberInput } fro
 import { enumerateDays, parseCoordinate } from '../../lib/itinerary'
 import type { ItineraryCategory, ItineraryInput, ItineraryItem, Trip } from '../../types'
 import { GeocodePicker } from './GeocodePicker'
+import { TimeInput, timeFieldError } from '../../components/DateTimeInputs'
 
 type Props = {
   trip: Trip
@@ -19,7 +20,7 @@ type Props = {
   onClose: () => void
 }
 
-type Errors = Partial<Record<'day' | 'title' | 'end' | 'coords' | 'cost', string>>
+type Errors = Partial<Record<'day' | 'title' | 'start' | 'end' | 'coords' | 'cost', string>>
 const FORM_ID = 'itinerary-form'
 
 /** ITI-02: thêm / sửa hoạt động */
@@ -67,7 +68,9 @@ export function ItineraryForm({ trip, open, item, defaultDay, onClose }: Props) 
     const found: Errors = {}
     if (!day) found.day = 'Vui lòng chọn ngày'
     if (!title.trim()) found.title = 'Vui lòng nhập tiêu đề'
-    if (startTime && endTime && endTime < startTime) found.end = 'Giờ kết thúc phải sau giờ bắt đầu'
+    found.start = timeFieldError(startTime)
+    found.end = timeFieldError(endTime)
+    if (!found.start && !found.end && startTime && endTime && endTime < startTime) found.end = 'Giờ kết thúc phải sau giờ bắt đầu'
     const latNum = parseCoordinate(lat)
     const lngNum = parseCoordinate(lng)
     if ((latNum === null) !== (lngNum === null)) found.coords = 'Cần nhập đủ cả vĩ độ và kinh độ'
@@ -75,6 +78,8 @@ export function ItineraryForm({ trip, open, item, defaultDay, onClose }: Props) 
     else if (lngNum !== null && (Number.isNaN(lngNum) || lngNum < -180 || lngNum > 180)) found.coords = 'Kinh độ phải từ -180 đến 180'
     const costNum = parseNumberInput(cost)
     if (costNum !== null && (Number.isNaN(costNum) || costNum < 0)) found.cost = 'Chi phí phải là số ≥ 0'
+    // Bỏ các khóa không có lỗi (timeFieldError trả về undefined)
+    for (const k of Object.keys(found) as (keyof Errors)[]) if (!found[k]) delete found[k]
     setErrors(found)
     if (Object.keys(found).length > 0) return
 
@@ -128,11 +133,11 @@ export function ItineraryForm({ trip, open, item, defaultDay, onClose }: Props) 
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Giờ bắt đầu" htmlFor="iti-start">
-            <Input id="iti-start" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+          <Field label="Giờ bắt đầu" htmlFor="iti-start" error={errors.start}>
+            <TimeInput id="iti-start" invalid={!!errors.start} value={startTime} onChange={setStartTime} />
           </Field>
           <Field label="Giờ kết thúc" htmlFor="iti-end" error={errors.end}>
-            <Input id="iti-end" type="time" aria-invalid={!!errors.end} value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <TimeInput id="iti-end" invalid={!!errors.end} value={endTime} onChange={setEndTime} />
           </Field>
         </div>
 
