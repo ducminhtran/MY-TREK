@@ -74,6 +74,51 @@ export type ItineraryItem = {
 /** Dữ liệu ghi vào bảng itinerary_items (ITI-02) */
 export type ItineraryInput = Omit<ItineraryItem, 'id' | 'trip_id' | 'sort_order' | 'created_at'>
 
+export type ExpenseSplit = { member_id: string; share_amount: number }
+
+export type Expense = {
+  id: string
+  trip_id: string
+  title: string
+  category: ItineraryCategory
+  amount: number
+  currency: string
+  exchange_rate: number
+  amount_base: number
+  paid_by: string
+  expense_date: string
+  split_type: 'equal' | 'custom'
+  note: string | null
+  created_at: string
+  splits: ExpenseSplit[]
+  attachment_count: number
+}
+
+/** Tham số gửi RPC save_expense (KT-09) */
+export type ExpenseInput = {
+  id?: string
+  title: string
+  category: ItineraryCategory
+  amount: number
+  currency: string
+  exchange_rate: number
+  paid_by: string
+  expense_date: string
+  split_type: 'equal' | 'custom'
+  note: string | null
+}
+
+export type Settlement = {
+  id: string
+  trip_id: string
+  from_member: string
+  to_member: string
+  amount: number
+  settled_on: string
+  note: string | null
+  created_at: string
+}
+
 /** Dữ liệu nhập của form chuyến đi (TRIP-02) */
 export type TripInput = {
   name: string

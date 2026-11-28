@@ -10,8 +10,9 @@
 |2|CSDL|**Hoàn thành** – migration chạy trên Supabase; test SQL PASS toàn bộ (28/11/2026)|
 |3|Auth + Tài khoản|Đã deploy (Actions xanh). Người dùng chuyển sang GĐ 4, **chưa xác nhận UAT 8 bước** của GĐ 3; SMTP (Gmail/Brevo) chưa chốt|
 |4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong. Người dùng chuyển sang GĐ 5, **chưa xác nhận** Actions xanh + thử 2 tài khoản|
-|5|Lịch trình + Bản đồ|Code xong – chờ upload, Actions xanh, thử tìm tọa độ + xem tuyến theo ngày|
-|6–8|–|Chưa bắt đầu|
+|5|Lịch trình + Bản đồ|Code xong. Người dùng chuyển sang GĐ 6, **chưa xác nhận** Actions xanh + UAT|
+|6|Chi tiêu đa tiền tệ + Chia tiền + Thanh toán|Code xong – chờ upload, Actions xanh (unit test split/settle), thử số dư về 0|
+|7–8|–|Chưa bắt đầu|
 
 ## Môi trường
 
@@ -37,6 +38,7 @@
 |Test SQL|Không dùng PostgreSQL cục bộ / file stub. Chạy `supabase/tests/01_rls_scenario.sql` trực tiếp trên Supabase SQL Editor, trong 1 transaction, kết thúc bằng lỗi có chủ đích để rollback|28/11/2026|
 |Q-03|**Bật** xác nhận email + SMTP riêng (README 3.5: Gmail App Password hoặc Brevo – người dùng chọn)|28/11/2026|
 |Đăng xuất|`signOut({ scope: 'local' })` – chỉ đăng xuất thiết bị hiện tại, không đá phiên ở máy khác|28/11/2026|
+|Q-06|Không xuất Excel/PDF ở bản đầu (mặc định – Roadmap #3)|28/11/2026|
 |Hạng mục chi tiêu|Dùng chung danh mục với lịch trình (di_chuyen, luu_tru, an_uong, tham_quan, mua_sam, khac) – PROMPT không liệt kê riêng|28/11/2026|
 
 ## Giai đoạn 1 – đã làm
@@ -101,6 +103,23 @@
 |KT-16|Xong|`MapTab` lazy-load (`React.lazy`) – Leaflet + CSS tách chunk riêng|
 |Thư viện|Thêm|`leaflet`, `react-leaflet`, `@types/leaflet` (có trong mục 4.1)|
 |Unit test|Xong|`lib/itinerary.test.ts`|
+
+## Giai đoạn 6 – đã làm
+
+|ID|Trạng thái|Ghi chú|
+|-|-|-|
+|EXP-01|Xong|Nhóm theo ngày (mới nhất trước), lọc hạng mục, người trả, số người chia, nguyên tệ + quy đổi, icon kẹp giấy|
+|EXP-02|Xong|Tiền tệ = gốc + các tiền tệ đã khai báo; tỷ giá tự điền, sửa được; tiền tệ gốc khóa = 1|
+|EXP-03 / BR-05|Xong|Chia đều theo đơn vị nhỏ nhất, phần dư cho người đầu danh sách|
+|EXP-04 / BR-06|Xong|Hiện "Còn thiếu / Thừa X"; chỉ lưu khi khớp 100% (RPC kiểm tra lại)|
+|EXP-05|Xong|RPC `save_expense`; lỗi giữ nguyên form|
+|EXP-06|Xong|Tổng chi quy đổi, số khoản, so ngân sách|
+|BAL-01 / BR-07|Xong|Đã trả · Phải chịu · Đã chuyển · Đã nhận · Còn lại; chênh lệch quy đổi dồn vào phần chia cuối (theo member_id)|
+|BAL-02 / BR-08|Xong|Greedy: người nợ nhiều nhất ↔ người nhận nhiều nhất|
+|BAL-03, BAL-04|Xong|Bấm "Đã trả" trên gợi ý (có xác nhận) + form thủ công; lịch sử, xóa được|
+|BAL-05|Xong|Sao chép bảng chia tiền ra text|
+|BAL-06|Xong|Cảnh báo nếu tổng Còn lại ≠ 0 (không bao giờ xảy ra nếu logic đúng – có unit test)|
+|Unit test|Xong|`lib/split.test.ts`: chia đều VND/USD/JPY, chênh lệch, số dư có ngoại tệ, thanh toán, gợi ý chuyển tiền, text|
 
 ## Ghi chú
 
