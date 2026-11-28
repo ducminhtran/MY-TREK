@@ -6,9 +6,9 @@
 
 |GĐ|Nội dung|Trạng thái|
 |-|-|-|
-|1|Khởi tạo dự án|**Hoàn thành** – Actions xanh, Pages hiện trang (người dùng xác nhận 28/11/2026)|
+|1|Khởi tạo dự án|**Hoàn thành** (28/11/2026). Đã sửa: workflow upload sai vị trí + Pages "Deploy from a branch" → chuyển sang GitHub Actions; thêm Secrets. Workflow xanh (typecheck + test + build GĐ 1–3 pass), web hiện trang Đăng nhập|
 |2|CSDL|**Hoàn thành** – migration chạy trên Supabase; test SQL PASS toàn bộ (28/11/2026)|
-|3|Auth + Tài khoản|Code xong – chờ upload, Actions xanh, đăng ký/đăng nhập thử trên bản deploy|
+|3|Auth + Tài khoản|Đã deploy (Actions xanh) – chờ người dùng thử đăng ký/xác nhận email/đăng nhập/quên mật khẩu trên bản deploy|
 |4–8|–|Chưa bắt đầu|
 
 ## Môi trường
