@@ -5,7 +5,7 @@ import { queryKeys } from './queries'
 import type { Expense, ExpenseInput, PaymentInput, Settlement } from '../types'
 
 const EXPENSE_SELECT =
-  'id, trip_id, title, category, amount, currency, exchange_rate, amount_base, paid_by, expense_date, due_date, split_type, note, created_at, ' +
+  'id, trip_id, title, category, amount, currency, exchange_rate, amount_base, paid_by, expense_date, due_date, split_type, note, is_planned, created_at, ' +
   'expense_splits (member_id, share_amount), expense_payments (id, paid_by, amount, paid_on, note, created_at), attachments (count)'
 
 type ExpenseRow = Omit<Expense, 'splits' | 'payments' | 'attachment_count'> & {

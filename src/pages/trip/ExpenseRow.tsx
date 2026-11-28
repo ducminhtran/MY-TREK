@@ -5,7 +5,7 @@ import { formatDate, formatMoney } from '../../lib/format'
 import { paidAmount, paymentStatus, PAYMENT_STATUS_LABELS, remainingAmount } from '../../lib/payments'
 import type { Expense } from '../../types'
 
-const STATUS_TONE = { unpaid: 'amber', partial: 'brand', paid: 'green' } as const
+const STATUS_TONE = { planned: 'slate', unpaid: 'amber', partial: 'brand', paid: 'green' } as const
 
 type Props = {
   expense: Expense

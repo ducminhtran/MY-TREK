@@ -17,6 +17,7 @@ export type DueOverview = { id: string; title: string; due_date: string | null; 
 export type TripOverview = {
   spending: SpendingSummary
   expenseCount: number
+  plannedCount: number
   /** Tổng chi phí theo hạng mục, giảm dần */
   byCategory: { category: string; amount: number }[]
   /** 3 khoản còn phải trả gần hạn nhất */
@@ -38,6 +39,7 @@ type ExpenseRow = {
   amount_base: number | string
   category: string
   due_date: string | null
+  is_planned: boolean
   expense_payments: { amount: number | string }[]
 }
 
@@ -51,7 +53,7 @@ export function useTripOverview(tripId: string, baseCurrency: string) {
       const today = toISODate(new Date())
       const [expRes, chkRes, itiRes, costRes] = await Promise.all([
         supabase.from('expenses')
-          .select('id, title, amount, currency, exchange_rate, amount_base, category, due_date, expense_payments (amount)')
+          .select('id, title, amount, currency, exchange_rate, amount_base, category, due_date, is_planned, expense_payments (amount)')
           .eq('trip_id', tripId),
         supabase.from('checklist_items').select('is_done').eq('trip_id', tripId),
         supabase
@@ -79,18 +81,21 @@ export function useTripOverview(tripId: string, baseCurrency: string) {
         exchange_rate: Number(e.exchange_rate),
         amount_base: Number(e.amount_base),
         due_date: e.due_date,
+        is_planned: e.is_planned,
         payments: e.expense_payments.map((p) => ({ amount: Number(p.amount) })),
       }))
 
+      // Chi theo hạng mục: chỉ khoản đã chốt (không gồm dự chi)
       const sums = new Map<string, number>()
-      for (const e of expenses) sums.set(e.category, (sums.get(e.category) ?? 0) + e.amount_base)
+      for (const e of expenses) if (!e.is_planned) sums.set(e.category, (sums.get(e.category) ?? 0) + e.amount_base)
       const dues = upcomingDues(expenses, baseCurrency, today)
       const checklist = chkRes.data as unknown as { is_done: boolean }[]
       const costs = costRes.data as unknown as { cost_estimate: number | string }[]
 
       return {
         spending: summarizeSpending(expenses, baseCurrency),
-        expenseCount: expenses.length,
+        expenseCount: expenses.filter((e) => !e.is_planned).length,
+        plannedCount: expenses.filter((e) => e.is_planned).length,
         byCategory: [...sums.entries()]
           .map(([category, amount]) => ({ category, amount: round2(amount) }))
           .sort((a, b) => b.amount - a.amount),

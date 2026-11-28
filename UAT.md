@@ -62,6 +62,17 @@ Cách ghi: điền **Đạt / Lỗi** vào cột Kết quả; nếu lỗi, ghi n
 | 4.8 | Tổng quan | Tổng chi, chi theo hạng mục, so với ngân sách đúng | |
 | 4.9 | Cài đặt → đổi tiền tệ gốc | Ô bị khóa, ghi chú "đã có khoản chi" | |
 | 4.10 | Thành viên → A xóa "Bé Na" | Bị chặn, báo "đã phát sinh chi tiêu…" | |
+| 4.11 | Thêm "Khách sạn" 5.000.000, chia đều 5 người → **Đặt cọc / nhiều đợt** → Đợt 1: 1.000.000, A trả; hạn trả = ngày nhận phòng | Nhãn "Đã cọc"; "Đã trả 1.000.000 · còn 4.000.000"; mục **Sắp phải trả** có khoản này | |
+| 4.12 | Tab Chi tiêu – ô tổng hợp | Tổng chi phí = Đã thực chi + Còn phải trả | |
+| 4.13 | Tab Chia tiền ngay sau khi cọc | Mỗi người chỉ chịu 200.000 (20% phần của mình); tổng "Còn lại" = 0 | |
+| 4.14 | Bấm **Ghi nhận thanh toán** trên khoản khách sạn → B trả 4.000.000 | Nhãn "Đã trả đủ"; biến mất khỏi Sắp phải trả; Chia tiền: mỗi người chịu đủ 1.000.000 | |
+| 4.15 | Ghi nhận thanh toán vượt phần còn lại | Báo lỗi, không lưu | |
+| 4.16 | Thêm khoản "Vé xe" → Đặt cọc / nhiều đợt → xóa hết đợt (chưa trả) | Nhãn "Chưa trả"; không ảnh hưởng bảng Chia tiền | |
+| 4.17 | Tab Tổng quan | Có Đã thực chi / Còn phải trả / Dự chi, Sắp phải trả, dòng "Dự kiến từ lịch trình" (nếu lịch trình có chi phí dự kiến) | |
+| 4.18 | Chi tiêu → mục **Dự chi** → **Thêm dự chi** "Ăn uống ngày 2" ~1.500.000 | Hiện trong mục Dự chi (nhãn xám, "~1.500.000 ₫"); **không** nằm trong danh sách chi thật | |
+| 4.19 | Ô tổng hợp | Tổng dự kiến = Đã thực chi + Còn phải trả + Dự chi; dòng "Ngân sách … còn lại … sau dự kiến" (vượt thì đỏ) | |
+| 4.20 | Tab Chia tiền sau khi thêm dự chi | Không thay đổi | |
+| 4.21 | Bấm **Đã chi** trên khoản dự chi → sửa số tiền thực tế 1.350.000, trả đủ 1 lần | Biến khỏi mục Dự chi, vào danh sách chi thật (nhãn Đã trả đủ); Chia tiền cập nhật | |
 
 ## 5. Checklist và tệp
 
@@ -100,5 +111,5 @@ Cách ghi: điền **Đạt / Lỗi** vào cột Kết quả; nếu lỗi, ghi n
 |-|-|
 | Người thực hiện | |
 | Ngày | |
-| Số mục Đạt / Tổng | / 48 |
+| Số mục Đạt / Tổng | / 59 |
 | Lỗi cần sửa | |

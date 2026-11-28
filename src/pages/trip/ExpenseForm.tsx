@@ -19,6 +19,10 @@ type Props = {
   myMemberId: string
   open: boolean
   expense: Expense | null
+  /** Thêm mới: chế độ thanh toán ban đầu (VD 'planned' khi bấm "Thêm dự chi") */
+  startMode?: PayMode
+  /** "Đã chi": chuyển khoản dự chi thành chi thật */
+  convert?: boolean
   onClose: () => void
   onDelete: (e: Expense) => void
 }
@@ -34,7 +38,7 @@ function isSinglePayment(e: Expense): boolean {
 }
 
 /** EXP-02 → EXP-05 + đặt cọc / nhiều đợt */
-export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose, onDelete }: Props) {
+export function ExpenseForm({ trip, members, myMemberId, open, expense, startMode, convert = false, onClose, onDelete }: Props) {
   const toast = useToast()
   const save = useSaveExpense(trip.id)
   const rates = useTripCurrencies(trip.id)
@@ -61,10 +65,14 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     setAmountText(expense ? formatNumber(expense.amount, 2) : '')
     setCurrency(expense?.currency ?? trip.base_currency)
     setRateText(formatNumber(expense?.exchange_rate ?? 1))
-    setDate(expense?.expense_date ?? toISODate(new Date()))
+    // "Đã chi": ngày chi mặc định là hôm nay
+    setDate(convert || !expense ? toISODate(new Date()) : expense.expense_date)
     setCategory(expense?.category ?? 'an_uong')
     const single = !expense || isSinglePayment(expense)
-    setPayMode(single ? 'full' : 'multi')
+    let mode: PayMode = single ? 'full' : 'multi'
+    if (expense?.is_planned) mode = convert ? 'full' : 'planned'
+    else if (!expense && startMode) mode = startMode
+    setPayMode(mode)
     setPayer(expense?.payments[0]?.paid_by ?? expense?.paid_by ?? myMemberId)
     setRows(expense && !single ? paymentsToRows(expense.payments) : [])
     setDueDate(expense?.due_date ?? '')
@@ -77,7 +85,7 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     setErrors({})
     save.reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- chỉ nạp lại khi mở form
-  }, [open, expense])
+  }, [open, expense, convert, startMode])
 
   const isBase = currency === trip.base_currency
   const currencyOptions = [trip.base_currency, ...(rates.data ?? []).map((r) => r.currency)]
@@ -122,7 +130,7 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     else if (differenceMinor !== 0) found.split = 'Tổng phần chia phải bằng đúng số tiền'
 
     let payments: PaymentInput[] = []
-    if (amount !== null && amountValid) {
+    if (amount !== null && amountValid && payMode !== 'planned') {
       if (payMode === 'full') {
         if (!payer) found.payments = 'Chọn người trả'
         payments = [{ paid_by: payer, amount, paid_on: date, note: null }]
@@ -142,24 +150,31 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
         expense: {
           id: expense?.id, title: title.trim(), category, amount, currency, exchange_rate: rate,
           expense_date: date, due_date: payMode === 'multi' && dueDate ? dueDate : null,
-          split_type: splitType, note: note.trim() || null,
+          split_type: splitType, note: note.trim() || null, is_planned: payMode === 'planned',
         },
         splits: shares,
         payments,
       },
       // EXP-05: lỗi → giữ nguyên form (không đóng)
-      { onSuccess: () => { toast(expense ? 'Đã lưu khoản chi' : 'Đã thêm khoản chi'); onClose() } },
+      { onSuccess: () => { toast(convert ? 'Đã ghi nhận khoản đã chi' : expense ? 'Đã lưu' : 'Đã thêm'); onClose() } },
     )
   }
+
+  const planned = payMode === 'planned'
+  const formTitle = convert
+    ? 'Ghi nhận đã chi'
+    : expense
+      ? (expense.is_planned ? 'Sửa dự chi' : 'Sửa khoản chi')
+      : (startMode === 'planned' ? 'Thêm dự chi' : 'Thêm khoản chi')
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={expense ? 'Sửa khoản chi' : 'Thêm khoản chi'}
+      title={formTitle}
       footer={
         <>
-          {expense && <Button variant="ghost" className="text-red-600" onClick={() => onDelete(expense)}>Xóa</Button>}
+          {expense && !convert && <Button variant="ghost" className="text-red-600" onClick={() => onDelete(expense)}>Xóa</Button>}
           <Button variant="secondary" onClick={onClose}>Hủy</Button>
           <Button type="submit" form={FORM_ID} loading={save.isPending}>Lưu</Button>
         </>
@@ -174,7 +189,7 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
         </Field>
 
         <div className="grid grid-cols-[1fr_7rem] gap-3">
-          <Field label="Tổng số tiền" htmlFor="exp-amount" required error={errors.amount}>
+          <Field label={planned ? 'Số tiền dự kiến' : convert ? 'Số tiền thực tế' : 'Tổng số tiền'} htmlFor="exp-amount" required error={errors.amount}>
             <Input id="exp-amount" inputMode="decimal" placeholder="VD: 5.000.000" aria-invalid={!!errors.amount}
               value={amountText} onChange={(e) => setAmountText(e.target.value)} />
           </Field>
@@ -193,7 +208,7 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Ngày chi / đặt" htmlFor="exp-date" error={errors.date}>
+          <Field label={planned ? 'Ngày dự kiến chi' : 'Ngày chi / đặt'} htmlFor="exp-date" error={errors.date}>
             <DateInput id="exp-date" invalid={!!errors.date} value={date} onChange={setDate} />
           </Field>
           <Field label="Hạng mục" htmlFor="exp-category">

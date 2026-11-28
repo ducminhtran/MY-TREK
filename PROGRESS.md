@@ -192,6 +192,22 @@
 |Unit test|`lib/payments.test.ts`; `split.test.ts` thêm các ca 2a|
 |Người dùng cần|Chạy `002` (nếu chưa), `003`, rồi test `02_payments_scenario.sql` trên SQL Editor; upload code|
 
+## Dự chi (28/11/2026 – quyết định 1a 2a 3a 4a)
+
+|Mã|Quyết định|
+|-|-|
+|1a|Ngân sách so với **Tổng dự kiến** = đã thực chi + còn phải trả + dự chi (thay quyết định 4a của đặt cọc)|
+|2a|Dự chi có người cùng chia (không bắt buộc, mặc định cả nhóm); giữ nguyên khi bấm "Đã chi"|
+|3a|Chi phí dự kiến của Lịch trình vẫn tách riêng (chỉ tham khảo)|
+|4a|Mục "Dự chi" riêng ở đầu tab Chi tiêu, sắp theo ngày dự kiến; danh sách chi thật bên dưới|
+
+|Hạng mục|Ghi chú|
+|-|-|
+|DB|`004_planned_expenses.sql`: `expenses.is_planned`; trigger chặn ghi thanh toán cho dự chi và chặn chuyển khoản đã có thanh toán về dự chi; `save_expense` nhận `is_planned` (dự chi bỏ qua đợt thanh toán + hạn trả)|
+|Chia tiền|Không cần sửa: dự chi không có đợt thanh toán nên theo 2a của đặt cọc tự không ảnh hưởng cân đối|
+|Frontend|Chế độ thứ 3 "Dự chi" trong `PaymentsEditor`; `PlannedSection` (Thêm dự chi, sửa, nút "Đã chi" → mở form với số tiền thực tế, ngày = hôm nay, trả đủ); tổng hợp 3 ô + Tổng dự kiến + ngân sách còn lại ở Chi tiêu và Tổng quan; "Chi theo hạng mục" và "Sắp phải trả" không gồm dự chi|
+|Test|`03_planned_scenario.sql` PLAN-01 → PLAN-05; `payments.test.ts` cập nhật|
+
 ## Đang chờ người dùng quyết
 
 |Việc|Trạng thái|

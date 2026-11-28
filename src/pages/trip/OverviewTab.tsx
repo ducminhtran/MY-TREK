@@ -20,10 +20,10 @@ export function OverviewTab() {
 
   const o = overview.data
   const s = o.spending
-  // Quyết định 4a: ngân sách so với TỔNG chi phí (đã chi + còn phải trả)
+  // Ngân sách so với TỔNG DỰ KIẾN = đã chi + còn phải trả + dự chi
   const budget = trip.budget === null ? null : Number(trip.budget)
-  const over = budget !== null && s.committed > budget
-  const percent = budget ? Math.min(100, Math.round((s.committed / budget) * 100)) : 0
+  const over = budget !== null && s.projected > budget
+  const percent = budget ? Math.min(100, Math.round((s.projected / budget) * 100)) : 0
   const maxCategory = o.byCategory[0]?.amount ?? 0
   const money = (n: number) => formatMoney(n, trip.base_currency)
 
@@ -40,9 +40,11 @@ export function OverviewTab() {
           <Wallet className="size-5 text-brand-700" aria-hidden />
           Chi tiêu
         </h2>
-        <p className="text-sm text-slate-500">Tổng chi phí ({o.expenseCount} khoản)</p>
-        <p className={`text-2xl font-bold ${over ? 'text-red-600' : 'text-slate-900'}`}>{money(s.committed)}</p>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+        <p className="text-sm text-slate-500">
+          Tổng dự kiến ({o.expenseCount} khoản chi{o.plannedCount > 0 ? `, ${o.plannedCount} dự chi` : ''})
+        </p>
+        <p className={`text-2xl font-bold ${over ? 'text-red-600' : 'text-slate-900'}`}>{money(s.projected)}</p>
+        <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
           <div className="rounded-lg bg-green-50 px-3 py-2">
             <p className="text-xs text-green-800">Đã thực chi</p>
             <p className="font-semibold text-green-900">{money(s.paid)}</p>
@@ -51,13 +53,17 @@ export function OverviewTab() {
             <p className="text-xs text-amber-800">Còn phải trả</p>
             <p className="font-semibold text-amber-900">{money(s.remaining)}</p>
           </div>
+          <div className="rounded-lg bg-slate-100 px-3 py-2">
+            <p className="text-xs text-slate-600">Dự chi</p>
+            <p className="font-semibold text-slate-800">{money(s.planned)}</p>
+          </div>
         </div>
         {budget !== null && budget > 0 && (
           <div className="mt-3">
             <div className="mb-1 flex justify-between text-xs text-slate-600">
               <span>Ngân sách {money(budget)}</span>
               <span className={over ? 'font-semibold text-red-600' : ''}>
-                {over ? `Vượt ${money(s.committed - budget)}` : `${percent}%`}
+                {over ? `Vượt ${money(s.projected - budget)}` : `Còn lại ${money(budget - s.projected)} · ${percent}%`}
               </span>
             </div>
             <div className="h-2.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>

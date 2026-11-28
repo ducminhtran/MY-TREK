@@ -15,6 +15,8 @@ import { AddPaymentForm } from './AddPaymentForm'
 import { useTripContext } from './context'
 import { ExpenseForm } from './ExpenseForm'
 import { ExpenseRow } from './ExpenseRow'
+import { PlannedSection } from './PlannedSection'
+import type { PayMode } from './PaymentsEditor'
 
 /** EXP-01, EXP-06 + đặt cọc: Tổng chi phí · Đã thực chi · Còn phải trả · Sắp phải trả */
 export function ExpensesTab() {
@@ -29,6 +31,8 @@ export function ExpensesTab() {
   const [editing, setEditing] = useState<Expense | null>(null)
   const [deleting, setDeleting] = useState<Expense | null>(null)
   const [paying, setPaying] = useState<Expense | null>(null)
+  const [startMode, setStartMode] = useState<PayMode | undefined>(undefined)
+  const [converting, setConverting] = useState(false)
 
   if (expenses.isPending || members.isPending) return <Spinner />
   if (expenses.isError) return <ErrorState error={toFriendlyError(expenses.error)} onRetry={() => void expenses.refetch()} />
@@ -39,10 +43,13 @@ export function ExpensesTab() {
   const cur = trip.base_currency
   const money = (n: number) => formatMoney(n, cur)
   const today = toISODate(new Date())
-  const all = expenses.data
-  const sum = summarizeSpending(all, cur)
-  const dues = upcomingDues(all, cur, today)
+  const sum = summarizeSpending(expenses.data, cur)
+  const dues = upcomingDues(expenses.data, cur, today)
+  const plannedItems = expenses.data.filter((e) => e.is_planned)
+  const all = expenses.data.filter((e) => !e.is_planned)  // khoản chi thật (đã chốt)
   const budget = trip.budget === null ? null : Number(trip.budget)
+  // Quyết định 1a: ngân sách so với Tổng dự kiến (đã chi + còn phải trả + dự chi)
+  const overBudget = budget !== null && sum.projected > budget
   const categories = [...new Set(all.map((e) => e.category))]
   const shown = filter === 'all' ? all : all.filter((e) => e.category === filter)
 
@@ -54,8 +61,10 @@ export function ExpensesTab() {
     else groups.push({ date: e.expense_date, items: [e] })
   }
 
-  function openForm(e: Expense | null) {
+  function openForm(e: Expense | null, mode?: PayMode, convert = false) {
     setEditing(e)
+    setStartMode(mode)
+    setConverting(convert)
     setFormOpen(true)
   }
 
@@ -64,8 +73,8 @@ export function ExpensesTab() {
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-slate-500">Tổng chi phí ({all.length} khoản)</p>
-            <p className={`text-2xl font-bold ${budget !== null && sum.committed > budget ? 'text-red-600' : 'text-slate-900'}`}>{money(sum.committed)}</p>
+            <p className="text-sm text-slate-500">Tổng dự kiến</p>
+            <p className={`text-2xl font-bold ${overBudget ? 'text-red-600' : 'text-slate-900'}`}>{money(sum.projected)}</p>
           </div>
           {canEdit && (
             <Button onClick={() => openForm(null)}>
@@ -74,23 +83,29 @@ export function ExpensesTab() {
             </Button>
           )}
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg bg-green-50 p-3">
-            <p className="text-green-800">Đã thực chi</p>
-            <p className="text-lg font-semibold text-green-900">{money(sum.paid)}</p>
+        <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+          <div className="rounded-lg bg-green-50 p-2 sm:p-3">
+            <p className="text-xs text-green-800 sm:text-sm">Đã thực chi</p>
+            <p className="font-semibold text-green-900 sm:text-lg">{money(sum.paid)}</p>
           </div>
-          <div className="rounded-lg bg-amber-50 p-3">
-            <p className="text-amber-800">Còn phải trả</p>
-            <p className="text-lg font-semibold text-amber-900">{money(sum.remaining)}</p>
+          <div className="rounded-lg bg-amber-50 p-2 sm:p-3">
+            <p className="text-xs text-amber-800 sm:text-sm">Còn phải trả</p>
+            <p className="font-semibold text-amber-900 sm:text-lg">{money(sum.remaining)}</p>
+          </div>
+          <div className="rounded-lg bg-slate-100 p-2 sm:p-3">
+            <p className="text-xs text-slate-600 sm:text-sm">Dự chi</p>
+            <p className="font-semibold text-slate-800 sm:text-lg">{money(sum.planned)}</p>
           </div>
         </div>
-        {/* Quyết định 4a: ngân sách so với tổng chi phí */}
         {budget !== null && budget > 0 && (
-          <p className="mt-2 text-sm text-slate-500">
-            Ngân sách {money(budget)} · {sum.committed > budget ? `vượt ${money(sum.committed - budget)}` : `còn ${money(budget - sum.committed)}`}
+          <p className={`mt-2 text-sm ${overBudget ? 'font-medium text-red-600' : 'text-slate-600'}`}>
+            Ngân sách {money(budget)} · {overBudget ? `vượt ${money(sum.projected - budget)}` : `còn lại ${money(budget - sum.projected)}`} sau dự kiến
           </p>
         )}
       </Card>
+
+      <PlannedSection items={plannedItems} baseCurrency={cur} canEdit={canEdit}
+        onAdd={() => openForm(null, 'planned')} onEdit={(e) => openForm(e)} onConvert={(e) => openForm(e, undefined, true)} />
 
       {dues.length > 0 && (
         <Card>
@@ -149,6 +164,7 @@ export function ExpensesTab() {
       )}
 
       <ExpenseForm trip={trip} members={memberList} myMemberId={myMemberId} open={formOpen} expense={editing}
+        startMode={startMode} convert={converting}
         onClose={() => setFormOpen(false)} onDelete={(e) => { remove.reset(); setDeleting(e) }} />
 
       <AddPaymentForm tripId={trip.id} members={memberList} defaultPayer={myMemberId} expense={paying} onClose={() => setPaying(null)} />

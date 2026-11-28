@@ -102,6 +102,8 @@ export type Expense = {
   due_date: string | null
   split_type: 'equal' | 'custom'
   note: string | null
+  /** Dự chi: khoản SẼ chi (ước tính), chưa chốt, không có đợt thanh toán */
+  is_planned: boolean
   created_at: string
   splits: ExpenseSplit[]
   payments: ExpensePayment[]
@@ -120,6 +122,7 @@ export type ExpenseInput = {
   due_date: string | null
   split_type: 'equal' | 'custom'
   note: string | null
+  is_planned: boolean
 }
 
 /** Đợt thanh toán gửi RPC save_expense (thay toàn bộ các đợt) */

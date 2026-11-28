@@ -32,7 +32,7 @@ Web app quản lý chuyến du lịch cho cá nhân, gia đình và nhóm bạn 
 | Thành viên | Vai trò Chủ chuyến đi / Được chỉnh sửa / Chỉ xem; mời bằng email (sao chép lời mời gửi Zalo); thành viên không dùng app (trẻ em, ông bà…) |
 | Lịch trình | Hoạt động theo từng ngày, giờ, địa điểm; tìm tọa độ; chỉ đường Google Maps; chi phí dự kiến |
 | Bản đồ | Các điểm đánh số, lọc theo ngày, nối tuyến trong ngày |
-| Chi tiêu | Đa tiền tệ, tỷ giá chốt theo từng khoản; chia đều hoặc tùy chỉnh; **đặt cọc / trả nhiều đợt** (mỗi đợt có người trả, ngày); Tổng chi phí · Đã thực chi · Còn phải trả · Sắp phải trả theo hạn |
+| Chi tiêu | Đa tiền tệ, tỷ giá chốt theo từng khoản; chia đều hoặc tùy chỉnh; **đặt cọc / trả nhiều đợt** (mỗi đợt có người trả, ngày); **dự chi** (khoản sẽ chi, ước tính); Đã thực chi · Còn phải trả · Dự chi · **Tổng dự kiến** so với ngân sách; Sắp phải trả theo hạn |
 | Chia tiền | Bảng cân đối tính theo **số tiền đã thực trả** (khoản mới cọc chỉ chia phần đã cọc), gợi ý ai chuyển cho ai, ghi nhận đã trả, sao chép kết quả |
 | Checklist | Hành lý / Giấy tờ / Việc cần làm; giao người phụ trách, hạn; mẫu gợi ý |
 | Tệp | Ảnh, PDF… tối đa 10 MB; chụp ảnh trực tiếp trên điện thoại; gắn với khoản chi / hoạt động |
@@ -90,16 +90,17 @@ Project hiện tại: `https://rpfxgqrypwsmiwzcflty.supabase.co` (đã cài đ�
 | 3 | **Table Editor** có 10 bảng: profiles, trips, trip_members, trip_currencies, itinerary_items, expenses, expense_splits, settlements, checklist_items, attachments |
 | 4 | **Storage** có bucket `trip-files` (Private) |
 | 5 | Kiểm thử: New query → dán toàn bộ `supabase/tests/01_rls_scenario.sql` → **Run** |
-| 6 | Chạy tiếp **lần lượt** các migration bổ sung: `002_date_format_messages.sql`, `003_expense_payments.sql` |
-| 7 | Kiểm thử đặt cọc: `supabase/tests/02_payments_scenario.sql` |
+| 6 | Chạy tiếp **lần lượt** các migration bổ sung: `002_date_format_messages.sql`, `003_expense_payments.sql`, `004_planned_expenses.sql` |
+| 7 | Kiểm thử: `supabase/tests/02_payments_scenario.sql` (đặt cọc), `03_planned_scenario.sql` (dự chi) |
 
-> Mỗi migration chỉ chạy 1 lần, theo đúng thứ tự số; chạy lại sẽ báo "already exists". Thay đổi CSDL về sau là file mới `004_...sql`.
+> Mỗi migration chỉ chạy 1 lần, theo đúng thứ tự số; chạy lại sẽ báo "already exists". Thay đổi CSDL về sau là file mới `005_...sql`.
 
 | Migration | Nội dung |
 |-|-|
 | `001_init.sql` | Toàn bộ bảng, RLS, RPC, Storage ban đầu |
 | `002_date_format_messages.sql` | Thông báo lỗi ngày theo định dạng dd-MM-yyyy |
 | `003_expense_payments.sql` | Đặt cọc / thanh toán nhiều đợt (bảng `expense_payments`, hạn trả, RPC `save_expense` mới) |
+| `004_planned_expenses.sql` | Dự chi (cột `is_planned`; khoản dự chi không có thanh toán, không ảnh hưởng Chia tiền) |
 
 Kết quả kiểm thử luôn hiện dưới dạng **thông báo lỗi có chủ đích** để hoàn tác dữ liệu test:
 

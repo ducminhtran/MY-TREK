@@ -5,7 +5,13 @@ import { formatMoney, formatNumber, isValidIsoDate, parseNumberInput, toISODate 
 import { fromMinor, toMinor } from '../../lib/split'
 import type { ExpensePayment, PaymentInput, TripMember } from '../../types'
 
-export type PayMode = 'full' | 'multi'
+export type PayMode = 'full' | 'multi' | 'planned'
+
+const MODE_LABELS: Record<PayMode, string> = {
+  full: 'Trả đủ 1 lần',
+  multi: 'Đặt cọc / nhiều đợt',
+  planned: 'Dự chi',
+}
 
 /** 1 dòng đợt thanh toán đang nhập (số tiền dạng chữ theo kiểu VN) */
 export type PaymentRow = { key: string; paid_by: string; amountText: string; date: string; note: string | null }
@@ -52,7 +58,7 @@ type Props = {
   defaultPayer: string
 }
 
-/** Quyết định 1a: trả đủ 1 lần, hoặc đặt cọc / trả nhiều đợt (mỗi đợt có người trả, ngày, số tiền) */
+/** Trả đủ 1 lần / Đặt cọc – nhiều đợt (mỗi đợt có người trả, ngày, số tiền) / Dự chi (sẽ chi, chưa trả) */
 export function PaymentsEditor(p: Props) {
   const paidMinor = p.rows.reduce((s, r) => {
     const v = parseNumberInput(r.amountText)
@@ -65,16 +71,21 @@ export function PaymentsEditor(p: Props) {
   return (
     <fieldset className="space-y-3">
       <legend className="mb-1 text-sm font-medium text-slate-700">Thanh toán</legend>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1">
-        {(['full', 'multi'] as const).map((m) => (
+      <div className="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
+        {(['full', 'multi', 'planned'] as const).map((m) => (
           <button key={m} type="button" onClick={() => p.onModeChange(m)}
-            className={`min-h-10 rounded-md text-sm font-medium ${p.mode === m ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-600'}`}>
-            {m === 'full' ? 'Trả đủ 1 lần' : 'Đặt cọc / nhiều đợt'}
+            className={`min-h-10 rounded-md px-1 text-xs font-medium sm:text-sm ${p.mode === m ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-600'}`}>
+            {MODE_LABELS[m]}
           </button>
         ))}
       </div>
 
-      {p.mode === 'full' ? (
+      {p.mode === 'planned' ? (
+        <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+          Khoản <strong>sẽ chi</strong> (ước tính), chưa ai trả. Được tính vào <strong>Tổng dự kiến</strong> để so ngân sách,
+          không ảnh hưởng bảng Chia tiền. Khi chi thật, bấm <strong>"Đã chi"</strong> để ghi số tiền thực tế.
+        </p>
+      ) : p.mode === 'full' ? (
         <Field label="Người trả" htmlFor="exp-payer" required>
           <select id="exp-payer" className={SELECT_CLASS} value={p.payer} onChange={(e) => p.onPayerChange(e.target.value)}>
             {p.members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
