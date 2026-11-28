@@ -1,8 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { isSupabaseConfigured } from './lib/supabase'
+import { AuthProvider } from './auth/AuthProvider'
+import { RequireAuth } from './auth/RequireAuth'
 import { ConfigMissing } from './components/ConfigMissing'
 import { Layout } from './components/Layout'
+import { ToastProvider } from './components/Toast'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { TripsPage } from './pages/TripsPage'
 import { NewTripPage } from './pages/NewTripPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -23,16 +30,33 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename={basename}>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<TripsPage />} />
-            <Route path="trips/new" element={<NewTripPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <BrowserRouter basename={basename}>
+            <Routes>
+              {/* Công khai */}
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+              <Route path="forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="reset-password" element={<ResetPasswordPage />} />
+
+              {/* Cần đăng nhập (AUTH-07) */}
+              <Route
+                element={
+                  <RequireAuth>
+                    <Layout />
+                  </RequireAuth>
+                }
+              >
+                <Route index element={<TripsPage />} />
+                <Route path="trips/new" element={<NewTripPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ToastProvider>
+      </AuthProvider>
     </QueryClientProvider>
   )
 }

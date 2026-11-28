@@ -82,7 +82,28 @@ Script kiểm thử luôn kết thúc bằng **một thông báo lỗi có chủ
 |-|-|
 | 1 | Authentication → **URL Configuration** → Site URL: `https://ducminhtran.github.io/MY-TREK/` |
 | 2 | Cùng trang, **Redirect URLs** → Add URL: `https://ducminhtran.github.io/MY-TREK/**` và `http://localhost:5173/**` |
-| 3 | Authentication → **Sign In / Providers** → Email: bật Email; độ dài mật khẩu tối thiểu = 8. "Confirm email" sẽ chốt ở Giai đoạn 3 (Q-03) |
+| 3 | Authentication → **Sign In / Providers** → Email: bật Email; **bật "Confirm email"** (Q-03); độ dài mật khẩu tối thiểu = 8 |
+| 4 | Cấu hình SMTP riêng theo mục 3.5 (bắt buộc khi dùng thật) |
+
+### 3.5 Gửi email bằng SMTP riêng (Q-03)
+
+SMTP mặc định của Supabase chỉ gửi được vài email mỗi giờ, chỉ hợp để thử. Khi đã bật "Confirm email", cần SMTP riêng để người dùng nhận được email xác nhận và email đặt lại mật khẩu.
+
+Supabase → Authentication → **Emails** → tab **SMTP Settings** → bật **Enable custom SMTP**, điền theo một trong hai cách:
+
+| Mục | Cách A – Gmail (đơn giản nhất) | Cách B – Brevo (miễn phí 300 email/ngày) |
+|-|-|-|
+| Chuẩn bị | Tài khoản Gmail đã bật xác minh 2 bước → myaccount.google.com → Bảo mật → **Mật khẩu ứng dụng** → tạo 1 mật khẩu 16 ký tự | Đăng ký brevo.com → Senders, Domains → thêm và xác minh email gửi → SMTP & API → tạo **SMTP key** |
+| Sender email | Địa chỉ Gmail của bạn | Email đã xác minh ở Brevo |
+| Sender name | `My Trek` | `My Trek` |
+| Host | `smtp.gmail.com` | `smtp-relay.brevo.com` |
+| Port | `587` | `587` |
+| Username | Địa chỉ Gmail của bạn | SMTP login Brevo cung cấp (dạng `xxxx@smtp-brevo.com`) |
+| Password | Mật khẩu ứng dụng 16 ký tự | SMTP key |
+
+Sau khi lưu: Authentication → **Rate Limits** → "Rate limit for sending emails" có thể tăng lên (VD 30/giờ).
+
+Kiểm tra: đăng ký 1 tài khoản bằng email thật → nhận email → bấm liên kết (trên cùng trình duyệt) → tự đăng nhập vào app.
 
 ### 3.4 Khóa cho GitHub Actions
 

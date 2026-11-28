@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router'
 import { Luggage, Plus, User, type LucideIcon } from 'lucide-react'
 import { Logo } from './Logo'
+import { displayNameOf, useAuth } from '../auth/AuthProvider'
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
@@ -34,8 +35,12 @@ export function Layout() {
 }
 
 function DesktopNav() {
+  const { user } = useAuth()
   return (
     <nav className="hidden items-center gap-1 md:flex" aria-label="Điều hướng chính">
+      <span className="mr-2 max-w-48 truncate text-sm text-slate-500" title={user?.email}>
+        {displayNameOf(user)}
+      </span>
       {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}

@@ -6,9 +6,10 @@
 
 |GĐ|Nội dung|Trạng thái|
 |-|-|-|
-|1|Khởi tạo dự án|Code xong – người dùng chuyển sang GĐ 2; **chưa xác nhận Actions xanh + Pages hiện trang**|
-|2|CSDL|Code xong – **chờ người dùng chạy migration + test trên Supabase**|
-|3–8|–|Chưa bắt đầu|
+|1|Khởi tạo dự án|**Hoàn thành** – Actions xanh, Pages hiện trang (người dùng xác nhận 28/11/2026)|
+|2|CSDL|**Hoàn thành** – migration chạy trên Supabase; test SQL PASS toàn bộ (28/11/2026)|
+|3|Auth + Tài khoản|Code xong – chờ upload, Actions xanh, đăng ký/đăng nhập thử trên bản deploy|
+|4–8|–|Chưa bắt đầu|
 
 ## Môi trường
 
@@ -32,6 +33,8 @@
 |Q-05|Viewer được tick xong/chưa mục checklist giao cho chính mình, qua RPC `set_checklist_done(p_item_id, p_done)` (SECURITY DEFINER, chỉ đổi `is_done`); RLS `checklist_items` giữ nguyên. Frontend dùng RPC này cho mọi vai trò|28/11/2026|
 |Q-01|Supabase `https://rpfxgqrypwsmiwzcflty.supabase.co` + publishable key; lưu ở `.env.local` (không commit) và GitHub Secrets|28/11/2026|
 |Test SQL|Không dùng PostgreSQL cục bộ / file stub. Chạy `supabase/tests/01_rls_scenario.sql` trực tiếp trên Supabase SQL Editor, trong 1 transaction, kết thúc bằng lỗi có chủ đích để rollback|28/11/2026|
+|Q-03|**Bật** xác nhận email + SMTP riêng (README 3.5: Gmail App Password hoặc Brevo – người dùng chọn)|28/11/2026|
+|Đăng xuất|`signOut({ scope: 'local' })` – chỉ đăng xuất thiết bị hiện tại, không đá phiên ở máy khác|28/11/2026|
 |Hạng mục chi tiêu|Dùng chung danh mục với lịch trình (di_chuyen, luu_tru, an_uong, tham_quan, mua_sam, khac) – PROMPT không liệt kê riêng|28/11/2026|
 
 ## Giai đoạn 1 – đã làm
@@ -54,6 +57,20 @@
 |`supabase/migrations/001_init.sql`: 10 bảng, trigger, RPC, RLS, bucket + policy Storage|Xong, chưa chạy|
 |Trigger bổ sung: BR-10 (khóa tiền tệ gốc), BR-14 (ngày hoạt động), chuẩn hóa email + tự suy ra trạng thái thành viên, đồng bộ email vào profiles|Xong|
 |`supabase/tests/01_rls_scenario.sql`: DB-01 → DB-13 + BR-03, BR-10, BR-11, BR-14, Q-05, MEM-06|Xong, chưa chạy|
+
+## Giai đoạn 3 – đã làm
+
+|ID|Trạng thái|Ghi chú|
+|-|-|-|
+|AUTH-01 Đăng ký|Xong|Phát hiện email đã đăng ký khi bật xác nhận (identities rỗng); màn hình "Kiểm tra email"|
+|AUTH-02 Đăng nhập|Xong|Có nút "Gửi lại email xác nhận" khi email chưa xác nhận|
+|AUTH-03 Quên mật khẩu|Xong|`/forgot-password` → link → `/reset-password`; link hết hạn/khác trình duyệt → báo + nút gửi lại|
+|AUTH-04 Tài khoản|Xong|Sửa họ tên (profiles + user_metadata), đổi mật khẩu, Cài ứng dụng (PWA-04), Đăng xuất|
+|AUTH-05 Đăng xuất|Xong|Xóa cache react-query + cache SW `supabase-api` (KT-14)|
+|AUTH-06 Giữ phiên|Xong|`persistSession` + `autoRefreshToken`|
+|AUTH-07 Bảo vệ route|Xong|`RequireAuth` → `/login`, quay lại trang cũ sau khi đăng nhập|
+|KT-03 link email|Xong|Đọc `?code`/`?error_code` lúc tải trang; mở link trên thiết bị khác → "Email đã được xác nhận. Vui lòng đăng nhập"; xóa tham số khỏi URL|
+|Mục 9.4 lỗi tiếng Việt|Xong|`lib/errors.ts` + unit test|
 
 ## Ghi chú
 

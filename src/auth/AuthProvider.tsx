@@ -30,7 +30,8 @@ function noticeFromLink(hasSession: boolean): AuthNotice | null {
     }
   }
   // PKCE: mở link trên trình duyệt/thiết bị khác thì không tự đăng nhập được, nhưng email đã xác nhận
-  if (hasCode && !hasSession) {
+  // Trang đặt lại mật khẩu tự hiển thị thông báo riêng
+  if (hasCode && !hasSession && !window.location.pathname.endsWith('/reset-password')) {
     return { tone: 'info', text: 'Email đã được xác nhận. Vui lòng đăng nhập để tiếp tục.' }
   }
   return null
