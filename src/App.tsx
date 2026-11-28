@@ -19,10 +19,11 @@ import { TripDetailPage } from './pages/TripDetailPage'
 import { OverviewTab } from './pages/trip/OverviewTab'
 import { MembersTab } from './pages/trip/MembersTab'
 import { SettingsTab } from './pages/trip/SettingsTab'
-import { ComingSoonTab } from './pages/trip/ComingSoonTab'
 import { ItineraryTab } from './pages/trip/ItineraryTab'
 import { ExpensesTab } from './pages/trip/ExpensesTab'
 import { BalancesTab } from './pages/trip/BalancesTab'
+import { ChecklistTab } from './pages/trip/ChecklistTab'
+import { FilesTab } from './pages/trip/FilesTab'
 import { Spinner } from './components/ui'
 
 // KT-16: chỉ tải Leaflet khi mở tab Bản đồ
@@ -68,7 +69,7 @@ export default function App() {
                   <Route path="itinerary" element={<ItineraryTab />} />
                   <Route path="expenses" element={<ExpensesTab />} />
                   <Route path="balances" element={<BalancesTab />} />
-                  <Route path="checklist" element={<ComingSoonTab title="Checklist" />} />
+                  <Route path="checklist" element={<ChecklistTab />} />
                   <Route
                     path="map"
                     element={
@@ -77,7 +78,7 @@ export default function App() {
                       </Suspense>
                     }
                   />
-                  <Route path="files" element={<ComingSoonTab title="Tệp đính kèm" />} />
+                  <Route path="files" element={<FilesTab />} />
                   <Route path="members" element={<MembersTab />} />
                   <Route path="settings" element={<SettingsTab />} />
                 </Route>

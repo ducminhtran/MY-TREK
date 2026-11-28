@@ -11,8 +11,9 @@
 |3|Auth + Tài khoản|Đã deploy (Actions xanh). Người dùng chuyển sang GĐ 4, **chưa xác nhận UAT 8 bước** của GĐ 3; SMTP (Gmail/Brevo) chưa chốt|
 |4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong. Người dùng chuyển sang GĐ 5, **chưa xác nhận** Actions xanh + thử 2 tài khoản|
 |5|Lịch trình + Bản đồ|Code xong. Người dùng chuyển sang GĐ 6, **chưa xác nhận** Actions xanh + UAT|
-|6|Chi tiêu đa tiền tệ + Chia tiền + Thanh toán|Code xong – chờ upload, Actions xanh (unit test split/settle), thử số dư về 0|
-|7–8|–|Chưa bắt đầu|
+|6|Chi tiêu đa tiền tệ + Chia tiền + Thanh toán|Code xong. Người dùng chuyển sang GĐ 7, **chưa xác nhận** Actions xanh + UAT|
+|7|Checklist + Tệp đính kèm|Code xong – chờ upload, Actions xanh, thử upload/mở/xóa file trên điện thoại|
+|8|Hoàn thiện PWA/offline, responsive, README, UAT|Chưa bắt đầu|
 
 ## Môi trường
 
@@ -120,6 +121,21 @@
 |BAL-05|Xong|Sao chép bảng chia tiền ra text|
 |BAL-06|Xong|Cảnh báo nếu tổng Còn lại ≠ 0 (không bao giờ xảy ra nếu logic đúng – có unit test)|
 |Unit test|Xong|`lib/split.test.ts`: chia đều VND/USD/JPY, chênh lệch, số dư có ngoại tệ, thanh toán, gợi ý chuyển tiền, text|
+
+## Giai đoạn 7 – đã làm
+
+|ID|Trạng thái|Ghi chú|
+|-|-|-|
+|CHK-01|Xong|3 nhóm Hành lý / Giấy tờ / Việc cần làm; thanh tiến độ tổng + đếm theo nhóm|
+|CHK-02|Xong|Thêm nhanh trên 1 dòng (mobile tự xuống dòng): tiêu đề, nhóm, người phụ trách, hạn|
+|CHK-03|Xong|Tick qua RPC `set_checklist_done` (Q-05: Viewer chỉ tick mục của mình); gạch ngang khi xong; quá hạn tô đỏ; sửa (modal), xóa|
+|CHK-04|Xong|"Thêm mẫu gợi ý" 10 mục khi checklist trống|
+|FILE-01|Xong|Chọn tệp hoặc "Chụp ảnh" (capture camera); ≤ 10 MB; path `<trip_id>/<uuid>-<ten-khong-dau>`; gắn tùy chọn với khoản chi/hoạt động; ghi bảng lỗi → xóa object vừa tải|
+|FILE-02|Xong|Icon theo loại, tên gốc, dung lượng, ngày giờ tải, gắn với gì|
+|FILE-03 / KT-15|Xong|Mở tab trống ngay khi bấm rồi gán signed URL (5 phút)|
+|FILE-04|Xong|Xóa object Storage rồi xóa dòng attachments|
+|Dọn dẹp|Xong|Xóa `src/pages/trip/ComingSoonTab.tsx` (mọi tab đã có)|
+|Unit test|Xong|`lib/files.test.ts`|
 
 ## Ghi chú
 

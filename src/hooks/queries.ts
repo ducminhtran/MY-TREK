@@ -19,6 +19,8 @@ export const queryKeys = {
   tripItinerary: (tripId: string) => ['trip', tripId, 'itinerary'] as const,
   tripExpenses: (tripId: string) => ['trip', tripId, 'expenses'] as const,
   tripSettlements: (tripId: string) => ['trip', tripId, 'settlements'] as const,
+  tripChecklist: (tripId: string) => ['trip', tripId, 'checklist'] as const,
+  tripFiles: (tripId: string) => ['trip', tripId, 'files'] as const,
 }
 
 export function useProfile(userId: string | undefined) {

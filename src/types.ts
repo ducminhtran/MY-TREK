@@ -119,6 +119,36 @@ export type Settlement = {
   created_at: string
 }
 
+export type ChecklistCategory = 'hanh_ly' | 'giay_to' | 'viec_can_lam'
+
+export type ChecklistItem = {
+  id: string
+  trip_id: string
+  title: string
+  category: ChecklistCategory
+  assignee_id: string | null
+  is_done: boolean
+  due_date: string | null
+  sort_order: number
+  created_at: string
+}
+
+export type ChecklistInput = Pick<ChecklistItem, 'title' | 'category' | 'assignee_id' | 'due_date'>
+
+export type Attachment = {
+  id: string
+  trip_id: string
+  storage_path: string
+  file_name: string
+  mime_type: string | null
+  size_bytes: number
+  expense_id: string | null
+  itinerary_item_id: string | null
+  created_at: string
+  expense_title: string | null
+  itinerary_title: string | null
+}
+
 /** Dữ liệu nhập của form chuyến đi (TRIP-02) */
 export type TripInput = {
   name: string
