@@ -6,8 +6,8 @@
 
 |GĐ|Nội dung|Trạng thái|
 |-|-|-|
-|1|Khởi tạo dự án|Code xong – **chờ người dùng upload lên GitHub và xác nhận Actions xanh + Pages hiện trang**|
-|2|CSDL|Chưa bắt đầu – cần Q-01|
+|1|Khởi tạo dự án|Code xong – người dùng chuyển sang GĐ 2; **chưa xác nhận Actions xanh + Pages hiện trang**|
+|2|CSDL|Code xong – **chờ người dùng chạy migration + test trên Supabase**|
 |3–8|–|Chưa bắt đầu|
 
 ## Môi trường
@@ -29,7 +29,10 @@
 |Thư viện|Đồng ý dùng `@tailwindcss/vite`|27/11/2026|
 |Kiểm tra|Không cài Node; dựa vào GitHub Actions (R-06 không thực hiện được cục bộ)|27/11/2026|
 |BR-10|Chặn đổi `base_currency` khi đã có khoản chi ở cả server (trigger `BEFORE UPDATE` trên `trips`) và UI|27/11/2026|
-|Q-05|Viewer được tick xong/chưa mục checklist giao cho chính mình, qua RPC `toggle_checklist_item(p_item_id)` (SECURITY DEFINER, chỉ đổi `is_done`); RLS `checklist_items` giữ nguyên|27/11/2026|
+|Q-05|Viewer được tick xong/chưa mục checklist giao cho chính mình, qua RPC `set_checklist_done(p_item_id, p_done)` (SECURITY DEFINER, chỉ đổi `is_done`); RLS `checklist_items` giữ nguyên. Frontend dùng RPC này cho mọi vai trò|28/11/2026|
+|Q-01|Supabase `https://rpfxgqrypwsmiwzcflty.supabase.co` + publishable key; lưu ở `.env.local` (không commit) và GitHub Secrets|28/11/2026|
+|Test SQL|Không dùng PostgreSQL cục bộ / file stub. Chạy `supabase/tests/01_rls_scenario.sql` trực tiếp trên Supabase SQL Editor, trong 1 transaction, kết thúc bằng lỗi có chủ đích để rollback|28/11/2026|
+|Hạng mục chi tiêu|Dùng chung danh mục với lịch trình (di_chuyen, luu_tru, an_uong, tham_quan, mua_sam, khac) – PROMPT không liệt kê riêng|28/11/2026|
 
 ## Giai đoạn 1 – đã làm
 
@@ -43,6 +46,14 @@
 |`format.ts` + unit test (ngày, tiền, tên file không dấu)|Xong|
 |Workflow `.github/workflows/deploy.yml`|Xong|
 |README khung|Xong|
+
+## Giai đoạn 2 – đã làm
+
+|Hạng mục|Trạng thái|
+|-|-|
+|`supabase/migrations/001_init.sql`: 10 bảng, trigger, RPC, RLS, bucket + policy Storage|Xong, chưa chạy|
+|Trigger bổ sung: BR-10 (khóa tiền tệ gốc), BR-14 (ngày hoạt động), chuẩn hóa email + tự suy ra trạng thái thành viên, đồng bộ email vào profiles|Xong|
+|`supabase/tests/01_rls_scenario.sql`: DB-01 → DB-13 + BR-03, BR-10, BR-11, BR-14, Q-05, MEM-06|Xong, chưa chạy|
 
 ## Ghi chú
 

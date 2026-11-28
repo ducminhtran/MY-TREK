@@ -53,7 +53,47 @@ npm run dev                    # http://localhost:5173
 
 ## 3. Supabase
 
-Sẽ bổ sung ở Giai đoạn 2 (chạy migration, cấu hình Auth, Storage).
+Project: `https://rpfxgqrypwsmiwzcflty.supabase.co`
+
+### 3.1 Tạo CSDL (làm 1 lần)
+
+| Bước | Thao tác |
+|-|-|
+| 1 | Supabase → **SQL Editor** → New query → dán toàn bộ `supabase/migrations/001_init.sql` → **Run**. Kết quả mong đợi: "Success. No rows returned" |
+| 2 | Kiểm tra **Table Editor** có 10 bảng: profiles, trips, trip_members, trip_currencies, itinerary_items, expenses, expense_splits, settlements, checklist_items, attachments |
+| 3 | Kiểm tra **Storage** có bucket `trip-files` (Private) |
+| 4 | Chạy kiểm thử: New query → dán toàn bộ `supabase/tests/01_rls_scenario.sql` → **Run** (xem 3.2) |
+
+> Migration chỉ chạy 1 lần. Chạy lại sẽ báo lỗi "already exists". Thay đổi CSDL về sau sẽ là file migration mới (`002_...sql`).
+
+### 3.2 Đọc kết quả kiểm thử
+
+Script kiểm thử luôn kết thúc bằng **một thông báo lỗi có chủ đích** để hoàn tác toàn bộ dữ liệu test (không để lại user hay chuyến đi giả).
+
+| Thông báo | Ý nghĩa |
+|-|-|
+| `PASS – tất cả kịch bản DB-01 → DB-13 ...` | Đạt |
+| `FAIL DB-xx: ...` | Không đạt – sao chép nguyên thông báo gửi lại để sửa |
+| Lỗi khác | Sao chép nguyên thông báo gửi lại |
+
+### 3.3 Cấu hình đăng nhập
+
+| Bước | Thao tác |
+|-|-|
+| 1 | Authentication → **URL Configuration** → Site URL: `https://ducminhtran.github.io/MY-TREK/` |
+| 2 | Cùng trang, **Redirect URLs** → Add URL: `https://ducminhtran.github.io/MY-TREK/**` và `http://localhost:5173/**` |
+| 3 | Authentication → **Sign In / Providers** → Email: bật Email; độ dài mật khẩu tối thiểu = 8. "Confirm email" sẽ chốt ở Giai đoạn 3 (Q-03) |
+
+### 3.4 Khóa cho GitHub Actions
+
+Repo → Settings → Secrets and variables → Actions → **New repository secret**:
+
+| Name | Value |
+|-|-|
+| `VITE_SUPABASE_URL` | `https://rpfxgqrypwsmiwzcflty.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | publishable key (`sb_publishable_...`) ở Supabase → Project Settings → API Keys |
+
+Chỉ dùng **publishable / anon key**. Không bao giờ dùng secret / service_role key.
 
 ## 4. Icon PWA
 
