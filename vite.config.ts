@@ -30,7 +30,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon-64.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'My Trek',
         short_name: 'My Trek',
@@ -49,6 +49,9 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: 'index.html',
+        // Cache sẵn ảnh minh họa để xem được khi offline; og-image chỉ dùng khi chia sẻ link
+        globPatterns: ['**/*.{js,css,html,png,svg,webp}'],
+        globIgnores: ['og-image.jpg'],
         runtimeCaching: [
           {
             // PWA-02: dữ liệu Supabase – ưu tiên mạng, offline thì dùng bản đã cache

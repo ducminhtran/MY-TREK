@@ -59,8 +59,8 @@ React + Vite + TypeScript · Tailwind CSS v4 · React Router · TanStack Query �
 
 ```text
 ├─ .github/workflows/deploy.yml   # build + deploy tự động khi push nhánh main
-├─ public/                        # favicon, icon PWA
-├─ scripts/generate-icons.ps1     # tạo lại icon PNG từ thiết kế favicon
+├─ public/                        # favicon, icon PWA, og-image (ảnh xem trước link)
+│  └─ illustrations/              # hình minh họa (màn hình trống, đăng nhập, 404…)
 ├─ supabase/
 │  ├─ migrations/001_init.sql     # CSDL: bảng, RLS, RPC, Storage
 │  └─ tests/01_rls_scenario.sql   # kiểm thử quyền (chạy trên SQL Editor)
@@ -184,7 +184,15 @@ npm run dev                    # http://localhost:5173
 | `npm test` | Unit test (Vitest) |
 | `npm run build` | Build ra thư mục `dist` |
 
-Tạo lại icon PWA sau khi sửa `public/favicon.svg`: `powershell -ExecutionPolicy Bypass -File scripts/generate-icons.ps1`
+### Hình ảnh
+
+| File | Dùng ở đâu |
+|-|-|
+| `public/pwa-192.png`, `pwa-512.png`, `pwa-maskable-512.png`, `apple-touch-icon.png`, `favicon-64.png` | Logo trên header, icon tab trình duyệt, icon app khi cài |
+| `public/og-image.jpg` (1200×630) | Ảnh xem trước khi gửi link qua Zalo/Facebook |
+| `public/illustrations/*.png` | Màn hình trống (chuyến đi, chi tiêu, checklist, tệp), đăng nhập, "Kiểm tra email", 404 |
+
+Ảnh gốc do ChatGPT tạo nằm ở `assets-src/` trên máy dev (không upload). Muốn thay ảnh: giữ **đúng tên file**, ảnh minh họa nên có nền trong suốt.
 
 ---
 

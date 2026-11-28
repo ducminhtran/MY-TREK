@@ -149,6 +149,19 @@
 |Rà soát responsive|Rà mã|Bảng cân đối cuộn ngang trên mobile; tab chuyến đi cuộn ngang; form dạng bottom sheet; vùng chạm ≥ 44px. **Chưa kiểm tra trên thiết bị thật** – thuộc UAT|
 |Bundle < 300 KB gzip|Chưa đo|Không có Node cục bộ; xem log bước Build trên Actions (dòng `dist/assets/index-*.js … gzip:`)|
 
+> 28/11/2026: người dùng báo **chưa phát hiện lỗi** trên bản deploy; lỗi phát sinh sẽ báo sau.
+
+## Hình ảnh (28/11/2026)
+
+|Hạng mục|Ghi chú|
+|-|-|
+|Nguồn|ChatGPT tạo: `assets-src/sprite-sheet.png` (8 hình, nền trong suốt) + `assets-src/app-icon.png` (1254×1254). Tách tự động bằng `assets-src/SpriteTool.cs` (C# qua PowerShell, System.Drawing)|
+|Icon|`pwa-192/512` (bo góc 21,9%), `pwa-maskable-512`, `apple-touch-icon` (180), `favicon-64`. Header dùng `pwa-192.png` thay cho SVG vẽ tay|
+|Minh họa|`public/illustrations/`: empty-trips, empty-expenses, empty-checklist, empty-files, email-sent, not-found, auth-hero. `EmptyState` có prop `image`|
+|og-image|`public/og-image.jpg` 1200×630 (~70 KB), chèn chữ "My Trek" bằng code; thẻ `og:*` trong `index.html` (URL tuyệt đối theo repo MY-TREK)|
+|PWA cache|Workbox precache thêm `png/svg/webp` (bỏ og-image) để ảnh minh họa xem được offline|
+|Đã xóa|`public/favicon.svg`, `scripts/generate-icons.ps1` (thiết kế cũ)|
+
 ## Definition of Done (mục 15)
 
 |Tiêu chí|Trạng thái|
