@@ -1,19 +1,22 @@
 import { useState } from 'react'
-import { Paperclip, Plus } from 'lucide-react'
-import { ILLUSTRATIONS } from '../../lib/assets'
+import { CalendarClock, Plus } from 'lucide-react'
 import { ConfirmDialog } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
-import { Badge, Button, Card, EmptyState, ErrorAlert, ErrorState, Spinner } from '../../components/ui'
+import { Button, Card, EmptyState, ErrorAlert, ErrorState, Spinner } from '../../components/ui'
 import { useDeleteExpense, useExpenses } from '../../hooks/expenses'
 import { useTripMembers } from '../../hooks/members'
+import { ILLUSTRATIONS } from '../../lib/assets'
 import { CATEGORY_LABELS } from '../../lib/constants'
 import { toFriendlyError } from '../../lib/errors'
-import { formatDateWithWeekday, formatMoney } from '../../lib/format'
+import { formatDate, formatDateWithWeekday, formatMoney, toISODate } from '../../lib/format'
+import { summarizeSpending, upcomingDues } from '../../lib/payments'
 import type { Expense } from '../../types'
+import { AddPaymentForm } from './AddPaymentForm'
 import { useTripContext } from './context'
 import { ExpenseForm } from './ExpenseForm'
+import { ExpenseRow } from './ExpenseRow'
 
-/** EXP-01, EXP-06 */
+/** EXP-01, EXP-06 + đặt cọc: Tổng chi phí · Đã thực chi · Còn phải trả · Sắp phải trả */
 export function ExpensesTab() {
   const { trip, canEdit, myMemberId } = useTripContext()
   const toast = useToast()
@@ -25,15 +28,20 @@ export function ExpensesTab() {
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Expense | null>(null)
   const [deleting, setDeleting] = useState<Expense | null>(null)
+  const [paying, setPaying] = useState<Expense | null>(null)
 
   if (expenses.isPending || members.isPending) return <Spinner />
   if (expenses.isError) return <ErrorState error={toFriendlyError(expenses.error)} onRetry={() => void expenses.refetch()} />
   if (members.isError) return <ErrorState error={toFriendlyError(members.error)} onRetry={() => void members.refetch()} />
 
-  const nameOf = new Map(members.data.map((m) => [m.id, m.display_name]))
-  const money = (n: number, cur = trip.base_currency) => formatMoney(n, cur)
+  const memberList = members.data
+  const nameOf = (id: string) => memberList.find((m) => m.id === id)?.display_name ?? '?'
+  const cur = trip.base_currency
+  const money = (n: number) => formatMoney(n, cur)
+  const today = toISODate(new Date())
   const all = expenses.data
-  const total = Math.round(all.reduce((s, e) => s + e.amount_base, 0) * 100) / 100
+  const sum = summarizeSpending(all, cur)
+  const dues = upcomingDues(all, cur, today)
   const budget = trip.budget === null ? null : Number(trip.budget)
   const categories = [...new Set(all.map((e) => e.category))]
   const shown = filter === 'all' ? all : all.filter((e) => e.category === filter)
@@ -53,24 +61,61 @@ export function ExpensesTab() {
 
   return (
     <div className="space-y-4">
-      {/* EXP-06 */}
-      <Card className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm text-slate-500">Tổng chi ({all.length} khoản)</p>
-          <p className={`text-2xl font-bold ${budget !== null && total > budget ? 'text-red-600' : 'text-slate-900'}`}>{money(total)}</p>
-          {budget !== null && budget > 0 && (
-            <p className="text-sm text-slate-500">
-              Ngân sách {money(budget)} · {total > budget ? `vượt ${money(total - budget)}` : `còn ${money(budget - total)}`}
-            </p>
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-slate-500">Tổng chi phí ({all.length} khoản)</p>
+            <p className={`text-2xl font-bold ${budget !== null && sum.committed > budget ? 'text-red-600' : 'text-slate-900'}`}>{money(sum.committed)}</p>
+          </div>
+          {canEdit && (
+            <Button onClick={() => openForm(null)}>
+              <Plus className="size-4" aria-hidden />
+              Thêm khoản chi
+            </Button>
           )}
         </div>
-        {canEdit && (
-          <Button onClick={() => openForm(null)}>
-            <Plus className="size-4" aria-hidden />
-            Thêm khoản chi
-          </Button>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg bg-green-50 p-3">
+            <p className="text-green-800">Đã thực chi</p>
+            <p className="text-lg font-semibold text-green-900">{money(sum.paid)}</p>
+          </div>
+          <div className="rounded-lg bg-amber-50 p-3">
+            <p className="text-amber-800">Còn phải trả</p>
+            <p className="text-lg font-semibold text-amber-900">{money(sum.remaining)}</p>
+          </div>
+        </div>
+        {/* Quyết định 4a: ngân sách so với tổng chi phí */}
+        {budget !== null && budget > 0 && (
+          <p className="mt-2 text-sm text-slate-500">
+            Ngân sách {money(budget)} · {sum.committed > budget ? `vượt ${money(sum.committed - budget)}` : `còn ${money(budget - sum.committed)}`}
+          </p>
         )}
       </Card>
+
+      {dues.length > 0 && (
+        <Card>
+          <h2 className="mb-2 flex items-center gap-2 font-semibold text-slate-800">
+            <CalendarClock className="size-5 text-amber-600" aria-hidden />
+            Sắp phải trả ({dues.length})
+          </h2>
+          <ul className="divide-y divide-slate-100 text-sm">
+            {dues.map((d) => (
+              <li key={d.expense.id} className="flex items-center justify-between gap-2 py-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-800">{d.expense.title}</p>
+                  <p className={`text-xs ${d.overdue ? 'font-semibold text-red-600' : 'text-slate-500'}`}>
+                    {d.expense.due_date ? `Hạn ${formatDate(d.expense.due_date)}${d.overdue ? ' (quá hạn)' : ''}` : 'Chưa đặt hạn'}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-semibold text-slate-900">{formatMoney(d.remaining, d.expense.currency)}</p>
+                  {d.expense.currency !== cur && <p className="text-xs text-slate-500">≈ {money(d.remainingBase)}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {categories.length > 1 && (
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
@@ -85,7 +130,7 @@ export function ExpensesTab() {
 
       {all.length === 0 ? (
         <EmptyState image={ILLUSTRATIONS.emptyExpenses} title="Chưa có khoản chi nào"
-          description="Ghi lại các khoản chi để theo dõi ngân sách và chia tiền tự động."
+          description="Ghi lại các khoản chi (kể cả khoản mới đặt cọc) để theo dõi ngân sách và chia tiền tự động."
           action={canEdit ? <Button onClick={() => openForm(null)}><Plus className="size-4" aria-hidden />Thêm khoản chi</Button> : undefined} />
       ) : (
         groups.map((g) => (
@@ -94,24 +139,8 @@ export function ExpensesTab() {
             <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
               {g.items.map((e) => (
                 <li key={e.id}>
-                  <button type="button" disabled={!canEdit} onClick={() => openForm(e)}
-                    className="flex w-full items-start gap-3 px-4 py-3 text-left enabled:hover:bg-slate-50">
-                    <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-1 font-medium text-slate-900">
-                        <span className="truncate">{e.title}</span>
-                        {e.attachment_count > 0 && <Paperclip className="size-4 shrink-0 text-slate-400" aria-label="Có tệp đính kèm" />}
-                      </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                        <Badge>{CATEGORY_LABELS[e.category] ?? e.category}</Badge>
-                        <span>{nameOf.get(e.paid_by) ?? '?'} trả</span>
-                        <span>· chia {e.splits.length} người</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-slate-900">{money(e.amount, e.currency)}</p>
-                      {e.currency !== trip.base_currency && <p className="text-xs text-slate-500">≈ {money(e.amount_base)}</p>}
-                    </div>
-                  </button>
+                  <ExpenseRow expense={e} baseCurrency={cur} canEdit={canEdit} nameOf={nameOf} today={today}
+                    onEdit={() => openForm(e)} onAddPayment={() => setPaying(e)} />
                 </li>
               ))}
             </ul>
@@ -119,15 +148,17 @@ export function ExpensesTab() {
         ))
       )}
 
-      <ExpenseForm trip={trip} members={members.data} myMemberId={myMemberId} open={formOpen} expense={editing}
+      <ExpenseForm trip={trip} members={memberList} myMemberId={myMemberId} open={formOpen} expense={editing}
         onClose={() => setFormOpen(false)} onDelete={(e) => { remove.reset(); setDeleting(e) }} />
+
+      <AddPaymentForm tripId={trip.id} members={memberList} defaultPayer={myMemberId} expense={paying} onClose={() => setPaying(null)} />
 
       <ConfirmDialog
         open={deleting !== null}
         title="Xóa khoản chi"
         message={
           <>
-            <p>Xóa khoản chi <strong>{deleting?.title}</strong>? Phần chia của khoản này cũng bị xóa.</p>
+            <p>Xóa khoản chi <strong>{deleting?.title}</strong>? Phần chia và các đợt thanh toán của khoản này cũng bị xóa.</p>
             {remove.error && <div className="mt-3"><ErrorAlert error={toFriendlyError(remove.error)} /></div>}
           </>
         }

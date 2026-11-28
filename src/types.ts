@@ -76,21 +76,35 @@ export type ItineraryInput = Omit<ItineraryItem, 'id' | 'trip_id' | 'sort_order'
 
 export type ExpenseSplit = { member_id: string; share_amount: number }
 
+/** 1 đợt thanh toán (cọc, đợt 2…) – số tiền theo nguyên tệ của khoản chi */
+export type ExpensePayment = {
+  id: string
+  paid_by: string
+  amount: number
+  paid_on: string
+  note: string | null
+}
+
 export type Expense = {
   id: string
   trip_id: string
   title: string
   category: ItineraryCategory
+  /** Tổng chi phí (cam kết) */
   amount: number
   currency: string
   exchange_rate: number
   amount_base: number
-  paid_by: string
+  /** Người trả đợt đầu (thông tin); null = chưa trả đồng nào */
+  paid_by: string | null
   expense_date: string
+  /** Hạn trả phần còn lại */
+  due_date: string | null
   split_type: 'equal' | 'custom'
   note: string | null
   created_at: string
   splits: ExpenseSplit[]
+  payments: ExpensePayment[]
   attachment_count: number
 }
 
@@ -102,11 +116,14 @@ export type ExpenseInput = {
   amount: number
   currency: string
   exchange_rate: number
-  paid_by: string
   expense_date: string
+  due_date: string | null
   split_type: 'equal' | 'custom'
   note: string | null
 }
+
+/** Đợt thanh toán gửi RPC save_expense (thay toàn bộ các đợt) */
+export type PaymentInput = { paid_by: string; amount: number; paid_on: string; note: string | null }
 
 export type Settlement = {
   id: string

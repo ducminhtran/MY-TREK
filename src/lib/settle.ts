@@ -3,10 +3,12 @@ import { formatMoney } from './format'
 import { fromMinor, minorFactor, toMinor, type Share } from './split'
 
 export type SettleExpense = {
-  amount_base: number
+  /** Tổng chi phí (nguyên tệ) */
+  amount: number
   exchange_rate: number
-  paid_by: string
-  splits: Share[]  // share_amount theo nguyên tệ của khoản chi
+  splits: Share[]  // share_amount theo nguyên tệ của khoản chi, tổng = amount
+  /** Các đợt ĐÃ trả (nguyên tệ) */
+  payments: { paid_by: string; amount: number }[]
 }
 
 export type SettleSettlement = { from_member: string; to_member: string; amount: number }
@@ -31,7 +33,9 @@ type Acc = { paid: number; owed: number; transferred: number; received: number }
 
 /**
  * BR-07: Số dư = Đã trả − Phải chịu + Đã chuyển − Đã nhận, tính theo đơn vị nhỏ nhất của tiền tệ gốc.
- * Phần chênh do làm tròn khi quy đổi dồn vào phần chia cuối của khoản chi → tổng số dư luôn = 0 (BAL-06).
+ * Quyết định 2a (28/11/2026): chỉ tính phần ĐÃ THỰC TRẢ. "Phải chịu" của mỗi người = số đã trả của khoản chi
+ * × tỷ lệ phần chia của họ (VD mới cọc 20% thì mỗi người chịu 20% phần của mình).
+ * Phần chênh do làm tròn dồn vào phần chia cuối của khoản chi → tổng số dư luôn = 0 (BAL-06).
  */
 export function computeBalances(
   memberIds: string[],
@@ -52,12 +56,19 @@ export function computeBalances(
   memberIds.forEach(get)
 
   for (const e of expenses) {
-    const paidMinor = Math.round(e.amount_base * f)
-    get(e.paid_by).paid += paidMinor
-    if (e.splits.length === 0) continue
-    // Thứ tự cố định để "phần chia cuối" luôn là cùng một người
+    // Đã trả: từng đợt quy đổi theo tỷ giá chung của khoản chi
+    let paidMinor = 0
+    for (const p of e.payments) {
+      const m = Math.round(p.amount * e.exchange_rate * f)
+      get(p.paid_by).paid += m
+      paidMinor += m
+    }
+    const shareTotal = e.splits.reduce((s, x) => s + x.share_amount, 0)
+    if (paidMinor === 0 || e.splits.length === 0 || shareTotal <= 0) continue
+
+    // Phải chịu: chia số đã trả theo tỷ lệ phần chia. Thứ tự cố định để "phần chia cuối" luôn là cùng một người
     const splits = [...e.splits].sort((a, b) => a.member_id.localeCompare(b.member_id))
-    const minors = splits.map((s) => Math.round(s.share_amount * e.exchange_rate * f))
+    const minors = splits.map((s) => Math.round((paidMinor * s.share_amount) / shareTotal))
     const diff = paidMinor - minors.reduce((sum, m) => sum + m, 0)
     minors[minors.length - 1] += diff
     splits.forEach((s, i) => {

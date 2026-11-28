@@ -174,6 +174,24 @@
 |DB|`002_date_format_messages.sql`: thông báo lỗi BR-14 dùng `DD-MM-YYYY` – **người dùng cần chạy trên SQL Editor**|
 |Test|`format.test.ts`, `trips.test.ts` cập nhật + test chuyển đổi dd-MM-yyyy ↔ YYYY-MM-DD, kiểm tra giờ 24h|
 
+## Đặt cọc / thanh toán nhiều đợt (28/11/2026 – quyết định 1a 2a 3a 4a 5a)
+
+|Mã|Quyết định|
+|-|-|
+|1a|Nhiều đợt: bảng `expense_payments` (người trả, ngày, số tiền nguyên tệ, ghi chú). `expenses.amount` = tổng chi phí cam kết; `expenses.due_date` = hạn trả phần còn lại; `expenses.paid_by` = người trả đợt sớm nhất (thông tin, có thể NULL)|
+|2a|Chia tiền theo số ĐÃ trả: "Phải chịu" = số đã trả × tỷ lệ phần chia (`lib/settle.ts`); tổng số dư vẫn = 0. Khoản chưa trả không ảnh hưởng cân đối|
+|3a|1 tỷ giá chung cho mọi đợt của khoản chi (BR-04 giữ nguyên)|
+|4a|Ngân sách so với Tổng chi phí; hiện riêng Đã thực chi / Còn phải trả|
+|5a|Chi phí dự kiến của lịch trình giữ riêng; Tổng quan hiện dòng "Dự kiến từ lịch trình" để tham khảo|
+
+|Hạng mục|Ghi chú|
+|-|-|
+|DB|`003_expense_payments.sql`: bảng mới + RLS; chuyển dữ liệu cũ (mỗi khoản = 1 đợt trả đủ); trigger chặn tổng đợt > tổng tiền và chặn giảm tổng tiền < đã trả; `trip_members_before_delete` tính cả người đã trả đợt; RPC `save_expense(p_expense, p_splits, p_payments default null)` – gọi 2 tham số như cũ vẫn chạy|
+|Test SQL|`02_payments_scenario.sql` PAY-01 → PAY-11|
+|Frontend|`PaymentsEditor` (Trả đủ 1 lần / Đặt cọc – nhiều đợt), `AddPaymentForm` (ghi nhận nhanh, mặc định = phần còn lại), `ExpenseRow` (nhãn Chưa trả / Đã cọc / Đã trả đủ, thanh tiến độ, hạn), tổng hợp + "Sắp phải trả" ở Chi tiêu và Tổng quan|
+|Unit test|`lib/payments.test.ts`; `split.test.ts` thêm các ca 2a|
+|Người dùng cần|Chạy `002` (nếu chưa), `003`, rồi test `02_payments_scenario.sql` trên SQL Editor; upload code|
+
 ## Đang chờ người dùng quyết
 
 |Việc|Trạng thái|

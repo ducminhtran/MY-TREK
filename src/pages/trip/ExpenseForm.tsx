@@ -1,16 +1,17 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Modal } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
+import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
 import { Button, ErrorAlert, Field, Input, SELECT_CLASS, TEXTAREA_CLASS } from '../../components/ui'
 import { useSaveExpense } from '../../hooks/expenses'
 import { useTripCurrencies } from '../../hooks/members'
 import { CATEGORY_LABELS } from '../../lib/constants'
 import { toFriendlyError } from '../../lib/errors'
 import { currencyDecimals, formatMoney, formatNumber, parseNumberInput, toISODate } from '../../lib/format'
-import { splitDifferenceMinor, splitEqual, type Share } from '../../lib/split'
-import type { Expense, ItineraryCategory, Trip, TripMember } from '../../types'
+import { splitDifferenceMinor, splitEqual, toMinor, type Share } from '../../lib/split'
+import type { Expense, ItineraryCategory, PaymentInput, Trip, TripMember } from '../../types'
 import { SplitEditor } from './SplitEditor'
-import { DateInput, dateFieldError } from '../../components/DateTimeInputs'
+import { newPaymentRow, PaymentsEditor, paymentsToRows, rowsToPayments, type PaymentRow, type PayMode } from './PaymentsEditor'
 
 type Props = {
   trip: Trip
@@ -22,9 +23,17 @@ type Props = {
   onDelete: (e: Expense) => void
 }
 
+type Errors = Partial<Record<'title' | 'amount' | 'rate' | 'date' | 'payments' | 'split', string>>
 const FORM_ID = 'expense-form'
 
-/** EXP-02 → EXP-05 */
+/** Khoản cũ / trả 1 lần: đúng 1 đợt = đủ tiền, cùng ngày chi, không có hạn */
+function isSinglePayment(e: Expense): boolean {
+  const p = e.payments[0]
+  return e.payments.length === 1 && p !== undefined && e.due_date === null &&
+    toMinor(p.amount, e.currency) === toMinor(e.amount, e.currency) && p.paid_on === e.expense_date
+}
+
+/** EXP-02 → EXP-05 + đặt cọc / nhiều đợt */
 export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose, onDelete }: Props) {
   const toast = useToast()
   const save = useSaveExpense(trip.id)
@@ -36,12 +45,15 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
   const [rateText, setRateText] = useState('1')
   const [date, setDate] = useState('')
   const [category, setCategory] = useState<ItineraryCategory>('an_uong')
-  const [paidBy, setPaidBy] = useState('')
+  const [payMode, setPayMode] = useState<PayMode>('full')
+  const [payer, setPayer] = useState('')
+  const [rows, setRows] = useState<PaymentRow[]>([])
+  const [dueDate, setDueDate] = useState('')
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [customShares, setCustomShares] = useState<Record<string, string>>({})
   const [note, setNote] = useState('')
-  const [errors, setErrors] = useState<Partial<Record<'title' | 'amount' | 'rate' | 'date' | 'paidBy' | 'split', string>>>({})
+  const [errors, setErrors] = useState<Errors>({})
 
   useEffect(() => {
     if (!open) return
@@ -51,7 +63,11 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     setRateText(formatNumber(expense?.exchange_rate ?? 1))
     setDate(expense?.expense_date ?? toISODate(new Date()))
     setCategory(expense?.category ?? 'an_uong')
-    setPaidBy(expense?.paid_by ?? myMemberId)
+    const single = !expense || isSinglePayment(expense)
+    setPayMode(single ? 'full' : 'multi')
+    setPayer(expense?.payments[0]?.paid_by ?? expense?.paid_by ?? myMemberId)
+    setRows(expense && !single ? paymentsToRows(expense.payments) : [])
+    setDueDate(expense?.due_date ?? '')
     setSplitType(expense?.split_type ?? 'equal')
     setSelected(new Set(expense ? expense.splits.map((s) => s.member_id) : members.map((m) => m.id)))
     setCustomShares(expense?.split_type === 'custom'
@@ -88,17 +104,36 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
     setRateText(next === trip.base_currency ? '1' : found ? formatNumber(found.rate_to_base) : '')
   }
 
+  function changePayMode(next: PayMode) {
+    // Chuyển sang nhiều đợt lần đầu → tạo sẵn dòng "cọc"
+    if (next === 'multi' && rows.length === 0) setRows([newPaymentRow(payer || myMemberId)])
+    setPayMode(next)
+  }
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const found: typeof errors = {}
+    const found: Errors = {}
     if (!title.trim()) found.title = 'Vui lòng nhập tên khoản chi'
     if (!amountValid) found.amount = 'Số tiền phải lớn hơn 0'
     if (rate === null || Number.isNaN(rate) || rate <= 0) found.rate = 'Tỷ giá phải là số lớn hơn 0'
     const dateError = dateFieldError(date, true)
     if (dateError) found.date = dateError
-    if (!paidBy) found.paidBy = 'Chọn người trả'
     if (shares.length === 0) found.split = 'Chọn ít nhất 1 người chia'
     else if (differenceMinor !== 0) found.split = 'Tổng phần chia phải bằng đúng số tiền'
+
+    let payments: PaymentInput[] = []
+    if (amount !== null && amountValid) {
+      if (payMode === 'full') {
+        if (!payer) found.payments = 'Chọn người trả'
+        payments = [{ paid_by: payer, amount, paid_on: date, note: null }]
+      } else {
+        const result = rowsToPayments(rows, amount, currency)
+        const dueError = dateFieldError(dueDate)
+        if (result.error) found.payments = result.error
+        else if (dueError) found.payments = `Hạn trả: ${dueError}`
+        payments = result.payments
+      }
+    }
     setErrors(found)
     if (Object.keys(found).length > 0 || amount === null || rate === null) return
 
@@ -106,9 +141,11 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
       {
         expense: {
           id: expense?.id, title: title.trim(), category, amount, currency, exchange_rate: rate,
-          paid_by: paidBy, expense_date: date || toISODate(new Date()), split_type: splitType, note: note.trim() || null,
+          expense_date: date, due_date: payMode === 'multi' && dueDate ? dueDate : null,
+          split_type: splitType, note: note.trim() || null,
         },
         splits: shares,
+        payments,
       },
       // EXP-05: lỗi → giữ nguyên form (không đóng)
       { onSuccess: () => { toast(expense ? 'Đã lưu khoản chi' : 'Đã thêm khoản chi'); onClose() } },
@@ -132,13 +169,13 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
         {save.error && <ErrorAlert error={toFriendlyError(save.error)} />}
 
         <Field label="Tên khoản chi" htmlFor="exp-title" required error={errors.title}>
-          <Input id="exp-title" maxLength={200} placeholder="VD: Ăn tối lẩu gà" aria-invalid={!!errors.title}
+          <Input id="exp-title" maxLength={200} placeholder="VD: Khách sạn 3 đêm" aria-invalid={!!errors.title}
             value={title} onChange={(e) => setTitle(e.target.value)} />
         </Field>
 
         <div className="grid grid-cols-[1fr_7rem] gap-3">
-          <Field label="Số tiền" htmlFor="exp-amount" required error={errors.amount}>
-            <Input id="exp-amount" inputMode="decimal" placeholder="VD: 450.000" aria-invalid={!!errors.amount}
+          <Field label="Tổng số tiền" htmlFor="exp-amount" required error={errors.amount}>
+            <Input id="exp-amount" inputMode="decimal" placeholder="VD: 5.000.000" aria-invalid={!!errors.amount}
               value={amountText} onChange={(e) => setAmountText(e.target.value)} />
           </Field>
           <Field label="Tiền tệ" htmlFor="exp-currency">
@@ -150,13 +187,13 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
 
         {!isBase && (
           <Field label={`Tỷ giá: 1 ${currency} = ? ${trip.base_currency}`} htmlFor="exp-rate" error={errors.rate}
-            hint={amountValid && rate && !Number.isNaN(rate) ? `≈ ${formatMoney(amount * rate, trip.base_currency)}` : 'Tỷ giá được chốt cho riêng khoản chi này'}>
+            hint={amountValid && rate && !Number.isNaN(rate) ? `≈ ${formatMoney(amount * rate, trip.base_currency)} · dùng chung cho mọi đợt` : 'Tỷ giá chốt cho riêng khoản chi này'}>
             <Input id="exp-rate" inputMode="decimal" aria-invalid={!!errors.rate} value={rateText} onChange={(e) => setRateText(e.target.value)} />
           </Field>
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Ngày chi" htmlFor="exp-date" error={errors.date}>
+          <Field label="Ngày chi / đặt" htmlFor="exp-date" error={errors.date}>
             <DateInput id="exp-date" invalid={!!errors.date} value={date} onChange={setDate} />
           </Field>
           <Field label="Hạng mục" htmlFor="exp-category">
@@ -166,11 +203,12 @@ export function ExpenseForm({ trip, members, myMemberId, open, expense, onClose,
           </Field>
         </div>
 
-        <Field label="Người trả" htmlFor="exp-payer" required error={errors.paidBy}>
-          <select id="exp-payer" className={SELECT_CLASS} value={paidBy} onChange={(e) => setPaidBy(e.target.value)}>
-            {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
-          </select>
-        </Field>
+        <PaymentsEditor
+          members={members} currency={currency} amount={amountValid ? amount : null}
+          mode={payMode} onModeChange={changePayMode} payer={payer} onPayerChange={setPayer}
+          rows={rows} onRowsChange={setRows} dueDate={dueDate} onDueDateChange={setDueDate}
+          error={errors.payments} defaultPayer={myMemberId}
+        />
 
         <SplitEditor
           members={members} splitType={splitType} onSplitTypeChange={setSplitType} currency={currency}

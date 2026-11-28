@@ -41,7 +41,7 @@ describe('computeBalances (BR-07, BAL-06)', () => {
 
   it('chia đều VND, tổng số dư = 0', () => {
     const balances = computeBalances(members, [
-      { amount_base: 300000, exchange_rate: 1, paid_by: 'a', splits: [
+      { amount: 300000, exchange_rate: 1, payments: [{ paid_by: 'a', amount: 300000 }], splits: [
         { member_id: 'a', share_amount: 100000 }, { member_id: 'b', share_amount: 100000 }, { member_id: 'c', share_amount: 100000 },
       ] },
     ], [], 'VND')
@@ -55,7 +55,7 @@ describe('computeBalances (BR-07, BAL-06)', () => {
   it('ngoại tệ: chênh lệch làm tròn dồn vào phần chia cuối, tổng vẫn = 0', () => {
     // 10 USD × 25.400,5 = 254.005 VND; chia 3,34 / 3,33 / 3,33
     const balances = computeBalances(members, [
-      { amount_base: 254005, exchange_rate: 25400.5, paid_by: 'b', splits: [
+      { amount: 10, exchange_rate: 25400.5, payments: [{ paid_by: 'b', amount: 10 }], splits: [
         { member_id: 'a', share_amount: 3.34 }, { member_id: 'b', share_amount: 3.33 }, { member_id: 'c', share_amount: 3.33 },
       ] },
     ], [], 'VND')
@@ -66,7 +66,7 @@ describe('computeBalances (BR-07, BAL-06)', () => {
 
   it('thanh toán đưa số dư về 0', () => {
     const balances = computeBalances(['a', 'b'], [
-      { amount_base: 100000, exchange_rate: 1, paid_by: 'a', splits: [
+      { amount: 100000, exchange_rate: 1, payments: [{ paid_by: 'a', amount: 100000 }], splits: [
         { member_id: 'a', share_amount: 50000 }, { member_id: 'b', share_amount: 50000 },
       ] },
     ], [{ from_member: 'b', to_member: 'a', amount: 50000 }], 'VND')
@@ -74,6 +74,42 @@ describe('computeBalances (BR-07, BAL-06)', () => {
     const b = balances.find((x) => x.member_id === 'b')
     expect(b?.transferred).toBe(50000)
     expect(balances.find((x) => x.member_id === 'a')?.received).toBe(50000)
+  })
+
+  it('2a: mới cọc → chỉ chia phần đã trả; trả nốt → chia đủ', () => {
+    const splits = ['a', 'b', 'c', 'd', 'e'].map((id) => ({ member_id: id, share_amount: 1000000 }))
+    const ids = splits.map((s) => s.member_id)
+    // Khách sạn 5 triệu, A cọc 1 triệu
+    let bal = computeBalances(ids, [{ amount: 5000000, exchange_rate: 1, splits, payments: [{ paid_by: 'a', amount: 1000000 }] }], [], 'VND')
+    let byId = Object.fromEntries(bal.map((b) => [b.member_id, b]))
+    expect(byId.a.owed).toBe(200000)
+    expect(byId.a.balance).toBe(800000)
+    expect(byId.b.balance).toBe(-200000)
+    expect(balanceTotalMinor(bal, 'VND')).toBe(0)
+    // B trả nốt 4 triệu
+    bal = computeBalances(ids, [{ amount: 5000000, exchange_rate: 1, splits, payments: [
+      { paid_by: 'a', amount: 1000000 }, { paid_by: 'b', amount: 4000000 },
+    ] }], [], 'VND')
+    byId = Object.fromEntries(bal.map((b) => [b.member_id, b]))
+    expect(byId.a.owed).toBe(1000000)
+    expect(byId.a.balance).toBe(0)
+    expect(byId.b.balance).toBe(3000000)
+    expect(byId.c.balance).toBe(-1000000)
+    expect(balanceTotalMinor(bal, 'VND')).toBe(0)
+  })
+
+  it('2a: chưa trả đồng nào → không ai nợ ai', () => {
+    const bal = computeBalances(['a', 'b'], [{ amount: 600000, exchange_rate: 1, payments: [], splits: [
+      { member_id: 'a', share_amount: 300000 }, { member_id: 'b', share_amount: 300000 },
+    ] }], [], 'VND')
+    expect(bal.every((b) => b.balance === 0 && b.owed === 0)).toBe(true)
+  })
+
+  it('2a: cọc lẻ vẫn tổng = 0', () => {
+    const bal = computeBalances(['a', 'b', 'c'], [{ amount: 1000000, exchange_rate: 1, payments: [{ paid_by: 'c', amount: 333333 }], splits: [
+      { member_id: 'a', share_amount: 333334 }, { member_id: 'b', share_amount: 333333 }, { member_id: 'c', share_amount: 333333 },
+    ] }], [], 'VND')
+    expect(balanceTotalMinor(bal, 'VND')).toBe(0)
   })
 
   it('thành viên chưa có giao dịch vẫn có dòng, số dư 0', () => {
