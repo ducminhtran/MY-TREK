@@ -12,7 +12,7 @@ import { CurrencySection } from './CurrencySection'
 
 /** SET-01 → SET-03 */
 export function SettingsTab() {
-  const { trip, canEdit, isOwner } = useTripContext()
+  const { trip, canEdit, isOwner, online } = useTripContext()
   const navigate = useNavigate()
   const toast = useToast()
   const update = useUpdateTrip(trip.id)
@@ -20,6 +20,9 @@ export function SettingsTab() {
   const expenseCount = useExpenseCount(trip.id)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
+  if (!online) {
+    return <Alert tone="info">Cần kết nối mạng để thay đổi cài đặt của chuyến đi.</Alert>
+  }
   if (!canEdit) {
     return <Alert tone="info">Bạn có quyền <strong>Chỉ xem</strong> nên không thay đổi được cài đặt của chuyến đi.</Alert>
   }

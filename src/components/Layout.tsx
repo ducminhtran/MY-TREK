@@ -1,7 +1,8 @@
 import { Link, NavLink, Outlet } from 'react-router'
-import { Luggage, Plus, User, type LucideIcon } from 'lucide-react'
+import { Luggage, Plus, User, WifiOff, type LucideIcon } from 'lucide-react'
 import { Logo } from './Logo'
 import { displayNameOf, useAuth } from '../auth/AuthProvider'
+import { useOnline } from '../hooks/useOnline'
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
@@ -13,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 export function Layout() {
+  const online = useOnline()
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="pt-safe sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -22,6 +24,13 @@ export function Layout() {
           </Link>
           <DesktopNav />
         </div>
+        {/* PWA-03 */}
+        {!online && (
+          <div className="flex items-center justify-center gap-2 bg-amber-100 px-4 py-2 text-sm text-amber-900" role="status">
+            <WifiOff className="size-4 shrink-0" aria-hidden />
+            Bạn đang offline – dữ liệu có thể chưa mới nhất
+          </div>
+        )}
       </header>
 
       {/* pb-24 chừa chỗ cho thanh điều hướng dưới trên mobile */}

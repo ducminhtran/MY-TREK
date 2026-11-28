@@ -12,8 +12,8 @@
 |4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong. Người dùng chuyển sang GĐ 5, **chưa xác nhận** Actions xanh + thử 2 tài khoản|
 |5|Lịch trình + Bản đồ|Code xong. Người dùng chuyển sang GĐ 6, **chưa xác nhận** Actions xanh + UAT|
 |6|Chi tiêu đa tiền tệ + Chia tiền + Thanh toán|Code xong. Người dùng chuyển sang GĐ 7, **chưa xác nhận** Actions xanh + UAT|
-|7|Checklist + Tệp đính kèm|Code xong – chờ upload, Actions xanh, thử upload/mở/xóa file trên điện thoại|
-|8|Hoàn thiện PWA/offline, responsive, README, UAT|Chưa bắt đầu|
+|7|Checklist + Tệp đính kèm|Code xong. Người dùng chuyển sang GĐ 8, **chưa xác nhận** Actions xanh + UAT|
+|8|Hoàn thiện PWA/offline, README, UAT|Code + tài liệu xong – chờ upload, Actions xanh, người dùng chạy [UAT.md](UAT.md)|
 
 ## Môi trường
 
@@ -136,6 +136,30 @@
 |FILE-04|Xong|Xóa object Storage rồi xóa dòng attachments|
 |Dọn dẹp|Xong|Xóa `src/pages/trip/ComingSoonTab.tsx` (mọi tab đã có)|
 |Unit test|Xong|`lib/files.test.ts`|
+
+## Giai đoạn 8 – đã làm
+
+|Hạng mục|Trạng thái|Ghi chú|
+|-|-|-|
+|PWA-03 banner offline|Xong|`hooks/useOnline.ts`; banner vàng dưới header|
+|PWA-03 khóa nút ghi|Xong|`canEdit` = vai trò Owner/Editor **và** online; thêm `online` vào context chuyến đi (Thành viên, Cài đặt, tick checklist); Tạo chuyến đi, Lời mời, Sửa tên, Đổi mật khẩu cũng khóa khi offline|
+|PWA-03 xem dữ liệu cũ|Xong|React Query `networkMode: 'offlineFirst'` → fetch vẫn chạy khi offline để Service Worker trả bản cache (NetworkFirst `/rest/v1/`). Lời mời (RPC POST) không cache – khối Lời mời ẩn khi offline|
+|README|Xong|Viết lại đầy đủ: chức năng, phân quyền, cài Supabase, deploy, cập nhật code qua web, sự cố thường gặp, giới hạn, roadmap|
+|UAT|Xong|`UAT.md` – 48 mục, 7 nhóm|
+|Rà soát responsive|Rà mã|Bảng cân đối cuộn ngang trên mobile; tab chuyến đi cuộn ngang; form dạng bottom sheet; vùng chạm ≥ 44px. **Chưa kiểm tra trên thiết bị thật** – thuộc UAT|
+|Bundle < 300 KB gzip|Chưa đo|Không có Node cục bộ; xem log bước Build trên Actions (dòng `dist/assets/index-*.js … gzip:`)|
+
+## Definition of Done (mục 15)
+
+|Tiêu chí|Trạng thái|
+|-|-|
+|Toàn bộ ID mục 6 đạt tiêu chí|Đã code đủ; **chờ UAT**|
+|Ma trận quyền đúng ở server (RLS)|Đạt – test SQL PASS (DB-01 → DB-13)|
+|typecheck / test / build pass; Actions xanh|Đã xanh tới GĐ 3; GĐ 4–8 **chờ xác nhận**|
+|Không có key bí mật trong repo; `.env*` bị ignore|Đạt – chỉ dùng publishable key; `.env.local` trong `.gitignore`|
+|Chạy tốt 360px và 1280px; cài PWA Android + iOS|**Chờ UAT** (mục 2.8, 6.1, 6.2)|
+|README tiếng Việt đủ cho người không chuyên|Đạt|
+|PROGRESS.md cập nhật trạng thái cuối|Đạt|
 
 ## Ghi chú
 

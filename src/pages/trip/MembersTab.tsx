@@ -18,7 +18,7 @@ const STATE_TONE = { joined: 'green', invited: 'amber', offline: 'slate' } as co
 
 /** MEM-01 → MEM-06 */
 export function MembersTab() {
-  const { trip, isOwner, myMemberId } = useTripContext()
+  const { trip, isOwner, myMemberId, online } = useTripContext()
   const navigate = useNavigate()
   const toast = useToast()
   const members = useTripMembers(trip.id)
@@ -69,7 +69,7 @@ export function MembersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-semibold text-slate-800">Thành viên ({members.data.length})</h2>
-        {isOwner && (
+        {isOwner && online && (
           <Button onClick={() => openForm(null)}>
             <UserPlus className="size-4" aria-hidden />
             Thêm thành viên
@@ -80,7 +80,7 @@ export function MembersTab() {
       <ul className="space-y-2">
         {members.data.map((m) => {
           const state = memberState(m)
-          const manageable = isOwner && m.role !== 'owner'
+          const manageable = isOwner && online && m.role !== 'owner'
           return (
             <li key={m.id}>
               <Card className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -117,7 +117,7 @@ export function MembersTab() {
         })}
       </ul>
 
-      {!isOwner && (
+      {!isOwner && online && (
         <Button variant="secondary" className="text-red-700" onClick={() => { remove.reset(); setLeaving(true) }}>
           <LogOut className="size-4" aria-hidden />
           Rời chuyến đi

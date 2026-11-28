@@ -3,6 +3,7 @@ import { displayNameOf, useAuth } from '../../auth/AuthProvider'
 import { Button, ErrorAlert, Field, Input } from '../../components/ui'
 import { useToast } from '../../components/Toast'
 import { useProfile, useUpdateFullName } from '../../hooks/queries'
+import { useOnline } from '../../hooks/useOnline'
 import { toFriendlyError } from '../../lib/errors'
 
 /** AUTH-04: sửa họ tên */
@@ -11,6 +12,7 @@ export function NameForm() {
   const toast = useToast()
   const profile = useProfile(user?.id)
   const update = useUpdateFullName(user?.id)
+  const online = useOnline()
 
   const savedName = profile.data?.full_name ?? displayNameOf(user)
   const [fullName, setFullName] = useState(savedName)
@@ -37,7 +39,7 @@ export function NameForm() {
         <Input id="profile-name" autoComplete="name" maxLength={200} aria-invalid={!!fieldError}
           value={fullName} onChange={(e) => setFullName(e.target.value)} />
       </Field>
-      <Button type="submit" loading={update.isPending} disabled={fullName.trim() === savedName}>
+      <Button type="submit" loading={update.isPending} disabled={fullName.trim() === savedName || !online}>
         Lưu họ tên
       </Button>
     </form>

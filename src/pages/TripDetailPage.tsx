@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../auth/AuthProvider'
 import { Badge, buttonClass, EmptyState, ErrorState, Spinner } from '../components/ui'
 import { useTripInfo } from '../hooks/trips'
+import { useOnline } from '../hooks/useOnline'
 import { ROLE_LABELS } from '../lib/constants'
 import { toFriendlyError } from '../lib/errors'
 import { countDaysInclusive } from '../lib/format'
@@ -31,6 +32,7 @@ export function TripDetailPage() {
   const { tripId } = useParams()
   const { user } = useAuth()
   const info = useTripInfo(tripId, user?.id)
+  const online = useOnline()
 
   if (info.isPending) return <Spinner />
   if (info.isError) return <ErrorState error={toFriendlyError(info.error)} onRetry={() => void info.refetch()} />
@@ -50,8 +52,9 @@ export function TripDetailPage() {
     trip,
     role,
     myMemberId,
-    canEdit: role === 'owner' || role === 'editor',
+    canEdit: online && (role === 'owner' || role === 'editor'),
     isOwner: role === 'owner',
+    online,
   }
 
   return (

@@ -6,6 +6,7 @@ import { ConfirmDialog } from '../../components/Modal'
 import { useToast } from '../../components/Toast'
 import { Button, ErrorAlert } from '../../components/ui'
 import { useMyInvitations, useRespondInvitation } from '../../hooks/trips'
+import { useOnline } from '../../hooks/useOnline'
 import { ROLE_LABELS } from '../../lib/constants'
 import { toFriendlyError } from '../../lib/errors'
 import { formatDateRange } from '../../lib/trips'
@@ -19,6 +20,7 @@ export function InvitationList() {
   const invitations = useMyInvitations(user?.id)
   const respond = useRespondInvitation()
   const [declining, setDeclining] = useState<Invitation | null>(null)
+  const online = useOnline()
 
   if (!invitations.data || invitations.data.length === 0) return null
 
@@ -70,10 +72,10 @@ export function InvitationList() {
             </p>
             <div className="mt-3 flex gap-2">
               <Button className="flex-1 sm:flex-none" loading={respond.isPending && respond.variables?.memberId === inv.member_id && respond.variables.accept}
-                disabled={respond.isPending} onClick={() => accept(inv)}>
+                disabled={respond.isPending || !online} onClick={() => accept(inv)}>
                 Chấp nhận
               </Button>
-              <Button variant="secondary" className="flex-1 sm:flex-none" disabled={respond.isPending}
+              <Button variant="secondary" className="flex-1 sm:flex-none" disabled={respond.isPending || !online}
                 onClick={() => { respond.reset(); setDeclining(inv) }}>
                 Từ chối
               </Button>

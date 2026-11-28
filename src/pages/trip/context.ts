@@ -6,9 +6,12 @@ export type TripContextValue = {
   trip: Trip
   role: TripRole
   myMemberId: string
-  /** Owner/Editor: được ghi dữ liệu (mục 5.2) – UI chỉ ẩn/khóa nút, quyền thật do RLS */
+  /** Owner/Editor VÀ đang online: được ghi dữ liệu (mục 5.2, PWA-03) – UI chỉ ẩn/khóa nút, quyền thật do RLS */
   canEdit: boolean
+  /** Vai trò Owner (không phụ thuộc mạng) */
   isOwner: boolean
+  /** PWA-03: offline thì khóa mọi nút ghi dữ liệu */
+  online: boolean
 }
 
 export function useTripContext(): TripContextValue {

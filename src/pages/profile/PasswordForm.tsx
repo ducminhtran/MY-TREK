@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Button, ErrorAlert, Field, PasswordInput } from '../../components/ui'
 import { useToast } from '../../components/Toast'
+import { useOnline } from '../../hooks/useOnline'
 import { toFriendlyError, type FriendlyError } from '../../lib/errors'
 import { supabase } from '../../lib/supabase'
 import { MIN_PASSWORD_LENGTH, validateNewPassword } from '../../lib/validation'
@@ -8,6 +9,7 @@ import { MIN_PASSWORD_LENGTH, validateNewPassword } from '../../lib/validation'
 /** AUTH-04: đổi mật khẩu khi đang đăng nhập */
 export function PasswordForm() {
   const toast = useToast()
+  const online = useOnline()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirm?: string }>({})
@@ -50,7 +52,7 @@ export function PasswordForm() {
         <PasswordInput id="new-password-confirm" autoComplete="new-password" aria-invalid={!!fieldErrors.confirm}
           value={confirm} onChange={(e) => setConfirm(e.target.value)} />
       </Field>
-      <Button type="submit" loading={submitting} disabled={!password}>Đổi mật khẩu</Button>
+      <Button type="submit" loading={submitting} disabled={!password || !online}>Đổi mật khẩu</Button>
     </form>
   )
 }

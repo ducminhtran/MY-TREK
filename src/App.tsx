@@ -31,7 +31,8 @@ const MapTab = lazy(() => import('./pages/trip/MapTab'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
+    // PWA-03: offlineFirst → vẫn gọi fetch khi offline để Service Worker trả dữ liệu đã cache (NetworkFirst)
+    queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false, networkMode: 'offlineFirst' },
   },
 })
 

@@ -22,12 +22,12 @@ type Props = {
 
 /** CHK-03: 1 dòng checklist – gạch ngang khi xong */
 export function ChecklistRow({ item, assigneeName, onEdit, onDelete }: Props) {
-  const { trip, canEdit, myMemberId } = useTripContext()
+  const { trip, canEdit, myMemberId, online } = useTripContext()
   const toast = useToast()
   const setDone = useSetChecklistDone(trip.id)
 
   // Q-05: Viewer chỉ tick được mục giao cho chính mình
-  const canToggle = canEdit || item.assignee_id === myMemberId
+  const canToggle = canEdit || (online && item.assignee_id === myMemberId)
   const overdue = !item.is_done && item.due_date !== null && item.due_date < toISODate(new Date())
 
   function toggle() {
