@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { isSupabaseConfigured } from './lib/supabase'
@@ -19,6 +20,11 @@ import { OverviewTab } from './pages/trip/OverviewTab'
 import { MembersTab } from './pages/trip/MembersTab'
 import { SettingsTab } from './pages/trip/SettingsTab'
 import { ComingSoonTab } from './pages/trip/ComingSoonTab'
+import { ItineraryTab } from './pages/trip/ItineraryTab'
+import { Spinner } from './components/ui'
+
+// KT-16: chỉ tải Leaflet khi mở tab Bản đồ
+const MapTab = lazy(() => import('./pages/trip/MapTab'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,11 +63,18 @@ export default function App() {
                 <Route path="trips/new" element={<NewTripPage />} />
                 <Route path="trips/:tripId" element={<TripDetailPage />}>
                   <Route index element={<OverviewTab />} />
-                  <Route path="itinerary" element={<ComingSoonTab title="Lịch trình" />} />
+                  <Route path="itinerary" element={<ItineraryTab />} />
                   <Route path="expenses" element={<ComingSoonTab title="Chi tiêu" />} />
                   <Route path="balances" element={<ComingSoonTab title="Chia tiền" />} />
                   <Route path="checklist" element={<ComingSoonTab title="Checklist" />} />
-                  <Route path="map" element={<ComingSoonTab title="Bản đồ" />} />
+                  <Route
+                    path="map"
+                    element={
+                      <Suspense fallback={<Spinner label="Đang tải bản đồ…" />}>
+                        <MapTab />
+                      </Suspense>
+                    }
+                  />
                   <Route path="files" element={<ComingSoonTab title="Tệp đính kèm" />} />
                   <Route path="members" element={<MembersTab />} />
                   <Route path="settings" element={<SettingsTab />} />

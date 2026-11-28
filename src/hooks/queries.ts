@@ -16,6 +16,7 @@ export const queryKeys = {
   tripCurrencies: (tripId: string) => ['trip', tripId, 'currencies'] as const,
   tripOverview: (tripId: string) => ['trip', tripId, 'overview'] as const,
   tripExpenseCount: (tripId: string) => ['trip', tripId, 'expense-count'] as const,
+  tripItinerary: (tripId: string) => ['trip', tripId, 'itinerary'] as const,
 }
 
 export function useProfile(userId: string | undefined) {

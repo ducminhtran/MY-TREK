@@ -53,7 +53,7 @@ export function SettingsTab() {
 
       {/* SET-03: chỉ Owner thấy */}
       {isOwner && (
-        <Card className="border-red-200">
+        <div className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
           <h2 className="mb-1 font-semibold text-red-700">Vùng nguy hiểm</h2>
           <p className="mb-3 text-sm text-slate-600">
             Xóa chuyến đi sẽ xóa vĩnh viễn toàn bộ lịch trình, chi tiêu, checklist và tệp đính kèm. Không thể hoàn tác.
@@ -62,7 +62,7 @@ export function SettingsTab() {
             <Trash2 className="size-4" aria-hidden />
             Xóa chuyến đi
           </Button>
-        </Card>
+        </div>
       )}
 
       <ConfirmDialog

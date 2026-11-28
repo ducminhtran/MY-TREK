@@ -51,6 +51,29 @@ export type Invitation = {
   invited_by: string | null
 }
 
+export type ItineraryCategory = 'di_chuyen' | 'luu_tru' | 'an_uong' | 'tham_quan' | 'mua_sam' | 'khac'
+
+export type ItineraryItem = {
+  id: string
+  trip_id: string
+  day_date: string
+  start_time: string | null
+  end_time: string | null
+  title: string
+  category: ItineraryCategory
+  location_name: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  cost_estimate: number | null
+  note: string | null
+  sort_order: number
+  created_at: string
+}
+
+/** Dữ liệu ghi vào bảng itinerary_items (ITI-02) */
+export type ItineraryInput = Omit<ItineraryItem, 'id' | 'trip_id' | 'sort_order' | 'created_at'>
+
 /** Dữ liệu nhập của form chuyến đi (TRIP-02) */
 export type TripInput = {
   name: string

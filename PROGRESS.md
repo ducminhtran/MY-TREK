@@ -9,8 +9,9 @@
 |1|Khởi tạo dự án|**Hoàn thành** (28/11/2026). Đã sửa: workflow upload sai vị trí + Pages "Deploy from a branch" → chuyển sang GitHub Actions; thêm Secrets. Workflow xanh (typecheck + test + build GĐ 1–3 pass), web hiện trang Đăng nhập|
 |2|CSDL|**Hoàn thành** – migration chạy trên Supabase; test SQL PASS toàn bộ (28/11/2026)|
 |3|Auth + Tài khoản|Đã deploy (Actions xanh). Người dùng chuyển sang GĐ 4, **chưa xác nhận UAT 8 bước** của GĐ 3; SMTP (Gmail/Brevo) chưa chốt|
-|4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong – chờ upload, Actions xanh, thử 2 tài khoản mời/nhận lời mời|
-|5–8|–|Chưa bắt đầu|
+|4|Chuyến đi + Thành viên + Lời mời + Tổng quan + Cài đặt|Code xong. Người dùng chuyển sang GĐ 5, **chưa xác nhận** Actions xanh + thử 2 tài khoản|
+|5|Lịch trình + Bản đồ|Code xong – chờ upload, Actions xanh, thử tìm tọa độ + xem tuyến theo ngày|
+|6–8|–|Chưa bắt đầu|
 
 ## Môi trường
 
@@ -86,6 +87,20 @@
 |MEM-03|Xong|Khối "Lời mời" ở trang chủ: Chấp nhận → mở chuyến đi; Từ chối có xác nhận|
 |SET-02|Xong|Thêm/sửa/xóa tỷ giá "1 USD = 25.400 VND"|
 |Unit test|Xong|`lib/trips.test.ts`: phân nhóm chuyến đi, khoảng ngày, trạng thái thành viên, text lời mời, kiểm tra form, đọc số kiểu VN|
+
+## Giai đoạn 5 – đã làm
+
+|ID|Trạng thái|Ghi chú|
+|-|-|-|
+|ITI-01|Xong|Khối "Ngày N · T7, 19/12/2026" cho mọi ngày của chuyến đi; sắp theo giờ (không giờ xếp cuối) → sort_order; nhóm "Ngoài thời gian chuyến đi" (TRIP-03)|
+|ITI-02|Xong|Form modal/bottom sheet; chọn ngày trong chuyến đi (giữ ngày cũ nếu đang nằm ngoài); kiểm tra giờ, tọa độ, chi phí|
+|ITI-03|Xong|Nominatim, ≤ 5 kết quả, giãn cách ≥ 1 giây/lần gọi; không thấy → báo, nhập tay|
+|ITI-04|Xong|Google Maps theo tọa độ, không có thì theo tên + địa chỉ|
+|ITI-05|Xong|Chi phí dự kiến theo ngày + toàn chuyến|
+|MAP-01 → MAP-06|Xong|Marker đánh số (divIcon), lọc ngày, nối tuyến khi lọc 1 ngày, popup + Chỉ đường, fit bounds / mặc định Việt Nam, danh sách thiếu tọa độ, attribution OSM|
+|KT-16|Xong|`MapTab` lazy-load (`React.lazy`) – Leaflet + CSS tách chunk riêng|
+|Thư viện|Thêm|`leaflet`, `react-leaflet`, `@types/leaflet` (có trong mục 4.1)|
+|Unit test|Xong|`lib/itinerary.test.ts`|
 
 ## Ghi chú
 
